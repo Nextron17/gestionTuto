@@ -5,7 +5,7 @@ import HorarioDisponible from '../models/HorarioDisponible';
 export const obtenerHorarios = async (req: AuthRequest, res: Response) => {
   try {
     const profesorId = req.query.profesorId;
-    const filtro: Record<string, any> = {};
+    const filtro: Record<string, unknown> = {};
 
     if (typeof profesorId === 'string' && profesorId.trim() !== '') {
       filtro.profesor = profesorId;
@@ -13,8 +13,16 @@ export const obtenerHorarios = async (req: AuthRequest, res: Response) => {
       filtro.profesor = req.user.id;
     }
 
-    const horarios = await HorarioDisponible.find(filtro).populate('profesor', 'nombre email');
-    return res.json(horarios);
+    const horarios = await HorarioDisponible.find(filtro).populate({
+      path: 'profesor',
+      select: 'nombre email rol',
+    });
+
+    const horariosValidos = horarios.filter(
+      (h) => h.profesor && (h.profesor as unknown as { rol: string }).rol === 'profesor'
+    );
+
+    return res.json(horariosValidos);
   } catch (error) {
     console.error('Error en obtenerHorarios:', error);
     return res.status(500).json({ message: 'Error al obtener horarios' });

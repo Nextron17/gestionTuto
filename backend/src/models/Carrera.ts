@@ -1,8 +1,18 @@
-import { Schema, model } from 'mongoose';
+import mongoose, { Schema, Document, Types } from 'mongoose';
 
-const carreraSchema = new Schema({
-  nombre: { type: String, required: true },
-  escuela: { type: Schema.Types.ObjectId, ref: 'Escuela', required: true }
-}, { timestamps: true });
+export interface ICarrera extends Document {
+  nombre: string;
+  codigo: string;
+  escuela: Types.ObjectId;
+}
 
-export default model('Carrera', carreraSchema);
+const CarreraSchema: Schema = new Schema(
+  {
+    nombre: { type: String, required: true },
+    codigo: { type: String, required: true, unique: true },
+    escuela: { type: Schema.Types.ObjectId, ref: 'Escuela', required: true },
+  },
+  { timestamps: true }
+);
+
+export default mongoose.model<ICarrera>('Carrera', CarreraSchema);

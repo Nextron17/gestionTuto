@@ -1,8 +1,16 @@
-import { Schema, model } from 'mongoose';
+import mongoose, { Schema, Document } from 'mongoose';
 
-const escuelaSchema = new Schema({
-  nombre: { type: String, required: true, unique: true },
-  codigo: { type: String, required: true }
-}, { timestamps: true });
+export interface IEscuela extends Document {
+  nombre: string;
+  codigo: string;
+}
 
-export default model('Escuela', escuelaSchema);
+const EscuelaSchema: Schema = new Schema(
+  {
+    nombre: { type: String, required: true, unique: true },
+    codigo: { type: String, required: true, unique: true },
+  },
+  { timestamps: true }
+);
+
+export default mongoose.model<IEscuela>('Escuela', EscuelaSchema);
