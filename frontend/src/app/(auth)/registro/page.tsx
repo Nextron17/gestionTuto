@@ -15,7 +15,6 @@ export default function RegistroPage() {
   const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [rol, setRol] = useState<'estudiante' | 'profesor'>('estudiante');
   const [carrera, setCarrera] = useState('');
   const [semestre, setSemestre] = useState('');
   const [carreras, setCarreras] = useState<CarreraItem[]>([]);
@@ -53,24 +52,28 @@ export default function RegistroPage() {
         nombre,
         email,
         password,
-        rol,
         carrera,
-        semestre: rol === 'estudiante' ? Number(semestre) : undefined,
+        semestre: Number(semestre),
       });
 
       router.push('/login');
     } catch (err) {
       const errorAxios = err as AxiosError<{ message: string }>;
-      setError(errorAxios.response?.data?.message || 'Error al registrar usuario');
+      setError(errorAxios.response?.data?.message || 'Error al registrar estudiante');
     }
   };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 py-12">
       <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-md space-y-6">
-        <h2 className="text-2xl font-bold text-center text-gray-800">Crear Cuenta</h2>
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-800">Crear Cuenta de Estudiante</h2>
+          <p className="text-xs text-gray-500 mt-1">
+            Ingresa tus datos académicos para acceder a las tutorías
+          </p>
+        </div>
 
-        {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+        {error && <p className="text-red-500 text-sm text-center bg-red-50 p-2 rounded">{error}</p>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -85,7 +88,7 @@ export default function RegistroPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">Email</label>
+            <label className="block text-sm font-medium text-gray-700">Correo Electrónico</label>
             <input
               type="email"
               value={email}
@@ -107,18 +110,6 @@ export default function RegistroPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">Rol</label>
-            <select
-              value={rol}
-              onChange={(e) => setRol(e.target.value as 'estudiante' | 'profesor')}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
-            >
-              <option value="estudiante">Estudiante</option>
-              <option value="profesor">Profesor</option>
-            </select>
-          </div>
-
-          <div>
             <label className="block text-sm font-medium text-gray-700">Carrera</label>
             <select
               value={carrera}
@@ -135,32 +126,31 @@ export default function RegistroPage() {
             </select>
           </div>
 
-          {rol === 'estudiante' && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Semestre</label>
-              <input
-                type="number"
-                min={1}
-                max={12}
-                value={semestre}
-                onChange={(e) => setSemestre(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                required
-              />
-            </div>
-          )}
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Semestre</label>
+            <input
+              type="number"
+              min={1}
+              max={12}
+              value={semestre}
+              onChange={(e) => setSemestre(e.target.value)}
+              placeholder="Ej: 3"
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              required
+            />
+          </div>
 
           <button
             type="submit"
             className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition font-medium"
           >
-            Registrarse
+            Registrarme como Estudiante
           </button>
         </form>
 
         <p className="text-center text-sm text-gray-600">
           ¿Ya tienes cuenta?{' '}
-          <Link href="/login" className="text-blue-600 hover:underline">
+          <Link href="/login" className="text-blue-600 hover:underline font-medium">
             Inicia Sesión
           </Link>
         </p>

@@ -7,10 +7,10 @@ import { AuthRequest } from '../middlewares/auth.middleware';
 
 export const registro = async (req: Request, res: Response) => {
   try {
-    const { nombre, email, password, rol, carrera, semestre } = req.body;
+    const { nombre, email, password, carrera, semestre } = req.body;
 
-    if (rol === 'admin') {
-      return res.status(403).json({ message: 'No está permitido registrar cuentas de administrador' });
+    if (!nombre || !email || !password || !carrera || !semestre) {
+      return res.status(400).json({ message: 'Todos los campos son obligatorios' });
     }
 
     const existeUsuario = await Usuario.findOne({ email });
@@ -20,21 +20,22 @@ export const registro = async (req: Request, res: Response) => {
 
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
-    const rolAsignado = rol === 'profesor' ? 'profesor' : 'estudiante';
 
+    // Registro público forzado a rol de estudiante
     const usuario = new Usuario({
       nombre,
       email,
       passwordHash,
-      rol: rolAsignado,
+      rol: 'estudiante',
       carrera,
-      semestre,
+      semestre: Number(semestre),
     });
 
     await usuario.save();
-    return res.status(201).json({ message: 'Usuario registrado exitosamente' });
+    return res.status(201).json({ message: 'Estudiante registrado exitosamente' });
   } catch (error) {
-    return res.status(500).json({ message: 'Error en el servidor' });
+    console.error('Error en el registro:', error);
+    return res.status(500).json({ message: 'Error en el servidor al registrar usuario' });
   }
 };
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { AxiosError } from 'axios';
 import { useAuth } from '../../../../context/AuthContext';
 import api from '../../../../lib/api';
 
@@ -25,12 +26,28 @@ interface ProfesorConHorarios extends ProfesorUser {
   horarios: HorarioItem[];
 }
 
+interface TutoriaGrupal {
+  _id: string;
+  materia: string;
+  tema?: string;
+  descripcion: string;
+  hora?: string;
+  modalidad?: string;
+  cupoMaximo?: number;
+  comentarioProfesor?: string;
+  profesor?: ProfesorUser;
+  estudiante?: { _id: string; nombre: string };
+  participantes?: { estudiante: { _id: string; nombre: string } }[];
+}
+
 export default function BuscarTutoriasPage() {
   const { user } = useAuth();
   const [nomProf, setNomProf] = useState('');
   const [materiaFiltro, setMateriaFiltro] = useState('');
   const [profesores, setProfesores] = useState<ProfesorConHorarios[]>([]);
+  const [grupales, setGrupales] = useState<TutoriaGrupal[]>([]);
   const [profesorSeleccionado, setProfesorSeleccionado] = useState<ProfesorConHorarios | null>(null);
+  const [alertaGrupal, setAlertaGrupal] = useState('');
 
   const [modalSolicitud, setModalSolicitud] = useState<{
     profesor: ProfesorConHorarios;
@@ -43,32 +60,49 @@ export default function BuscarTutoriasPage() {
   const [mensaje, setMensaje] = useState('');
   const [cargando, setCargando] = useState(true);
 
+  const cargarDatos = async () => {
+    try {
+      const [resProfesores, resHorarios, resGrupales] = await Promise.all([
+        api.get('/auth/profesores'),
+        api.get('/horarios'),
+        api.get('/tutorias/grupales'),
+      ]);
+
+      const listaProfesores: ProfesorUser[] = resProfesores.data;
+      const listaHorarios: HorarioItem[] = resHorarios.data;
+
+      const profesoresAgrupados: ProfesorConHorarios[] = listaProfesores.map((prof) => ({
+        ...prof,
+        horarios: listaHorarios.filter((h) => h.profesor && h.profesor._id === prof._id),
+      }));
+
+      setProfesores(profesoresAgrupados);
+      setGrupales(resGrupales.data || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
-    const cargarProfesoresYHorarios = async () => {
-      try {
-        const [resProfesores, resHorarios] = await Promise.all([
-          api.get('/auth/profesores'),
-          api.get('/horarios'),
-        ]);
-
-        const listaProfesores: ProfesorUser[] = resProfesores.data;
-        const listaHorarios: HorarioItem[] = resHorarios.data;
-
-        const profesoresAgrupados: ProfesorConHorarios[] = listaProfesores.map((prof) => ({
-          ...prof,
-          horarios: listaHorarios.filter((h) => h.profesor && h.profesor._id === prof._id),
-        }));
-
-        setProfesores(profesoresAgrupados);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setCargando(false);
-      }
+    const iniciar = async () => {
+      await cargarDatos();
+      setCargando(false);
     };
-
-    cargarProfesoresYHorarios();
+    iniciar();
   }, []);
+
+  const inscribirseEnGrupal = async (tutoriaId: string) => {
+    setAlertaGrupal('');
+    try {
+      await api.post(`/tutorias/${tutoriaId}/inscribirse`);
+      setAlertaGrupal('¡Te has inscrito correctamente a la tutoría grupal!');
+      await cargarDatos();
+      setTimeout(() => setAlertaGrupal(''), 3500);
+    } catch (err) {
+      const errorAxios = err as AxiosError<{ message: string }>;
+      setAlertaGrupal(errorAxios.response?.data?.message || 'No se pudo completar la inscripción');
+    }
+  };
 
   const profesoresFiltrados = profesores.filter((p) => {
     const coincideNombre = p.nombre.toLowerCase().includes(nomProf.toLowerCase());
@@ -121,11 +155,12 @@ export default function BuscarTutoriasPage() {
   };
 
   if (cargando) {
-    return <div className="text-gray-500">Cargando profesores de tu carrera...</div>;
+    return <div className="text-gray-500">Cargando profesores y tutorías disponibles...</div>;
   }
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
+      {/* Buscador de Profesores */}
       <div className="bg-white p-6 rounded-xl shadow-sm border space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <h2 className="text-xl font-bold text-gray-800">Buscar Tutorías</h2>
@@ -164,8 +199,87 @@ export default function BuscarTutoriasPage() {
         </div>
       </div>
 
+      {/* Tutorías Grupales Programadas Abiertas (HU-16) */}
+      {grupales.length > 0 && (
+        <div className="bg-white p-6 rounded-xl shadow-sm border space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+            <div>
+              <h3 className="text-lg font-bold text-gray-800">
+                Tutorías Grupales Programadas (Inscripción Abierta)
+              </h3>
+              <p className="text-xs text-gray-500">
+                Únete a una tutoría ya programada por un docente de tu carrera
+              </p>
+            </div>
+          </div>
+
+          {alertaGrupal && (
+            <div className="p-2.5 bg-blue-50 border border-blue-200 text-blue-800 rounded-lg text-xs font-medium">
+              {alertaGrupal}
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {grupales.map((tg) => {
+              const totalInscritos = 1 + (tg.participantes?.length || 0);
+              const cupo = tg.cupoMaximo || 10;
+              const yaSoyParte =
+                tg.estudiante?._id === user?.id ||
+                tg.participantes?.some((p) => p.estudiante?._id === user?.id);
+
+              return (
+                <div
+                  key={tg._id}
+                  className="p-4 bg-purple-50/40 rounded-lg border border-purple-200 flex flex-col justify-between gap-3"
+                >
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-bold text-sm text-gray-800">
+                        {tg.materia} {tg.tema ? `- ${tg.tema}` : ''}
+                      </span>
+                      <span className="text-[11px] font-semibold bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full">
+                        Cupos: {totalInscritos}/{cupo}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-600">{tg.descripcion}</p>
+                    <p className="text-xs text-gray-700 pt-1">
+                      <span className="font-semibold">Profesor:</span> {tg.profesor?.nombre} •{' '}
+                      <span className="capitalize">{tg.modalidad || 'Virtual'}</span>
+                    </p>
+                    <p className="text-xs text-gray-700">
+                      <span className="font-semibold">Horario:</span> {tg.hora || 'Por confirmar'}
+                    </p>
+                  </div>
+
+                  <div className="flex justify-end">
+                    {yaSoyParte ? (
+                      <span className="text-xs font-semibold text-emerald-700 bg-emerald-100 px-3 py-1.5 rounded-lg">
+                        ✓ Ya estás inscrito
+                      </span>
+                    ) : totalInscritos >= cupo ? (
+                      <span className="text-xs font-semibold text-gray-500 bg-gray-200 px-3 py-1.5 rounded-lg">
+                        Cupo lleno
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => inscribirseEnGrupal(tg._id)}
+                        className="bg-purple-600 hover:bg-purple-700 text-white text-xs px-4 py-1.5 rounded-lg font-medium transition"
+                      >
+                        + Inscribirme a esta tutoría
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Resultados de Profesores */}
       <div className="bg-white p-6 rounded-xl shadow-sm border space-y-4">
-        <h3 className="text-lg font-bold text-gray-800">Resultados</h3>
+        <h3 className="text-lg font-bold text-gray-800">Profesores Disponibles</h3>
 
         {profesoresFiltrados.length === 0 ? (
           <p className="text-gray-500 text-sm">
