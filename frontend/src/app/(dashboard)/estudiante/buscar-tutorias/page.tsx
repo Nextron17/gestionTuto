@@ -1,9 +1,19 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { AxiosError } from 'axios';
 import { useAuth } from '../../../../context/AuthContext';
 import api from '../../../../lib/api';
+import { Icon } from '../../../../components/ui/Icon';
+import { SearchInput } from '../../../../components/ui/SearchInput';
+import { Button } from '../../../../components/ui/Button';
+import { SurfaceCard } from '../../../../components/ui/SurfaceCard';
+import { Badge } from '../../../../components/ui/Badge';
+import { PageHeader } from '../../../../components/ui/PageHeader';
+import { Modal } from '../../../../components/ui/Modal';
+import { FormInput, FormSelect, FormTextarea } from '../../../../components/ui/FormField';
+import { CalloutBanner } from '../../../../components/ui/CalloutBanner';
 
 interface ProfesorUser {
   _id: string;
@@ -40,14 +50,29 @@ interface TutoriaGrupal {
   participantes?: { estudiante: { _id: string; nombre: string } }[];
 }
 
-export default function BuscarTutoriasPage() {
+function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() || '')
+    .join('');
+}
+
+function BuscarTutoriasContent() {
   const { user } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const queryGlobal = searchParams.get('q')?.trim() || '';
+
   const [nomProf, setNomProf] = useState('');
   const [materiaFiltro, setMateriaFiltro] = useState('');
   const [profesores, setProfesores] = useState<ProfesorConHorarios[]>([]);
   const [grupales, setGrupales] = useState<TutoriaGrupal[]>([]);
   const [profesorSeleccionado, setProfesorSeleccionado] = useState<ProfesorConHorarios | null>(null);
-  const [alertaGrupal, setAlertaGrupal] = useState('');
+  const [alertaGrupal, setAlertaGrupal] = useState<{ tipo: 'ok' | 'error'; texto: string } | null>(
+    null
+  );
 
   const [modalSolicitud, setModalSolicitud] = useState<{
     profesor: ProfesorConHorarios;
@@ -57,7 +82,8 @@ export default function BuscarTutoriasPage() {
   const [tema, setTema] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [hora, setHora] = useState('');
-  const [mensaje, setMensaje] = useState('');
+  const [enviandoSolicitud, setEnviandoSolicitud] = useState(false);
+  const [mensaje, setMensaje] = useState<{ tipo: 'ok' | 'error'; texto: string } | null>(null);
   const [cargando, setCargando] = useState(true);
 
   const cargarDatos = async () => {
@@ -92,15 +118,29 @@ export default function BuscarTutoriasPage() {
   }, []);
 
   const inscribirseEnGrupal = async (tutoriaId: string) => {
-    setAlertaGrupal('');
+    setAlertaGrupal(null);
     try {
       await api.post(`/tutorias/${tutoriaId}/inscribirse`);
-      setAlertaGrupal('¡Te has inscrito correctamente a la tutoría grupal!');
+      setAlertaGrupal({
+        tipo: 'ok',
+        texto: '¡Te has inscrito correctamente a la tutoría grupal!',
+      });
       await cargarDatos();
-      setTimeout(() => setAlertaGrupal(''), 3500);
+      setTimeout(() => setAlertaGrupal(null), 3500);
     } catch (err) {
       const errorAxios = err as AxiosError<{ message: string }>;
-      setAlertaGrupal(errorAxios.response?.data?.message || 'No se pudo completar la inscripción');
+      setAlertaGrupal({
+        tipo: 'error',
+        texto: errorAxios.response?.data?.message || 'No se pudo completar la inscripción',
+      });
+    }
+  };
+
+  const limpiarTodosLosFiltros = () => {
+    setNomProf('');
+    setMateriaFiltro('');
+    if (queryGlobal) {
+      router.replace('/estudiante/buscar-tutorias');
     }
   };
 
@@ -111,16 +151,37 @@ export default function BuscarTutoriasPage() {
       (p.materias &&
         p.materias.some((m) => m.toLowerCase().includes(materiaFiltro.toLowerCase())));
 
-    return coincideNombre && coincideMateria;
+    const qLower = queryGlobal.toLowerCase();
+    const coincideGlobal =
+      !qLower ||
+      p.nombre.toLowerCase().includes(qLower) ||
+      (p.carrera && p.carrera.toLowerCase().includes(qLower)) ||
+      (p.escuela && p.escuela.toLowerCase().includes(qLower)) ||
+      (p.materias && p.materias.some((m) => m.toLowerCase().includes(qLower)));
+
+    return coincideNombre && coincideMateria && coincideGlobal;
+  });
+
+  const grupalesFiltradas = grupales.filter((tg) => {
+    const qLower = queryGlobal.toLowerCase();
+    const matLower = materiaFiltro.toLowerCase();
+    const profLower = nomProf.toLowerCase();
+
+    const coincideProf =
+      !profLower || (tg.profesor?.nombre || '').toLowerCase().includes(profLower);
+    const coincideMat = !matLower || tg.materia.toLowerCase().includes(matLower);
+    const coincideGlobal =
+      !qLower ||
+      tg.materia.toLowerCase().includes(qLower) ||
+      (tg.tema && tg.tema.toLowerCase().includes(qLower)) ||
+      (tg.profesor?.nombre && tg.profesor.nombre.toLowerCase().includes(qLower));
+
+    return coincideProf && coincideMat && coincideGlobal;
   });
 
   const abrirSolicitud = (prof: ProfesorConHorarios, horario?: HorarioItem) => {
     setModalSolicitud({ profesor: prof, horario });
-    if (horario) {
-      setHora(`${horario.dia} ${horario.horaInicio} - ${horario.horaFin}`);
-    } else {
-      setHora('');
-    }
+    setHora(horario ? `${horario.dia} ${horario.horaInicio} - ${horario.horaFin}` : '');
     if (prof.materias && prof.materias.length > 0) {
       setMateria(prof.materias[0]);
     } else {
@@ -128,13 +189,14 @@ export default function BuscarTutoriasPage() {
     }
     setTema('');
     setDescripcion('');
-    setMensaje('');
+    setMensaje(null);
   };
 
   const enviarSolicitud = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!modalSolicitud) return;
 
+    setEnviandoSolicitud(true);
     try {
       await api.post('/tutorias', {
         materia,
@@ -143,355 +205,557 @@ export default function BuscarTutoriasPage() {
         profesorId: modalSolicitud.profesor._id,
         hora,
       });
-      setMensaje('¡Solicitud enviada correctamente!');
+      setMensaje({ tipo: 'ok', texto: '¡Solicitud enviada correctamente!' });
       setTimeout(() => {
         setModalSolicitud(null);
-        setMensaje('');
-      }, 1500);
+        setMensaje(null);
+      }, 1200);
     } catch (err) {
       console.error(err);
-      setMensaje('Error al enviar la solicitud');
+      setMensaje({ tipo: 'error', texto: 'Error al enviar la solicitud' });
+    } finally {
+      setEnviandoSolicitud(false);
     }
   };
 
   if (cargando) {
-    return <div className="text-gray-500">Cargando profesores y tutorías disponibles...</div>;
+    return (
+      <div className="max-w-6xl mx-auto py-8 text-sm text-on-surface-variant flex items-center gap-2">
+        <Icon className="text-primary animate-pulse">hourglass_top</Icon>
+        <span>Cargando profesores y tutorías disponibles...</span>
+      </div>
+    );
   }
 
-  return (
-    <div className="space-y-6 max-w-5xl mx-auto">
-      {/* Buscador de Profesores */}
-      <div className="bg-white p-6 rounded-xl shadow-sm border space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <h2 className="text-xl font-bold text-gray-800">Buscar Tutorías</h2>
-          {user?.carrera && (
-            <span className="text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1 rounded-full self-start sm:self-auto">
-              Carrera: {user.carrera}
-            </span>
-          )}
-        </div>
+  const hayFiltrosActivos = Boolean(nomProf || materiaFiltro || queryGlobal);
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <input
-            type="text"
-            placeholder="Nom Prof"
+  return (
+    <div className="space-y-space-lg max-w-6xl mx-auto">
+      <PageHeader
+        eyebrow="01. Directorio Académico"
+        title="Buscar Tutorías"
+        description="Encuentra docentes disponibles, revisa sus franjas horarias o inscríbete en talleres y tutorías grupales."
+        actions={
+          user?.carrera ? (
+            <Badge variant="primary" className="px-3 py-1">
+              <Icon className="text-[15px]">school</Icon>
+              <span>{user.carrera}</span>
+            </Badge>
+          ) : undefined
+        }
+      />
+
+      {/* Barra de búsqueda y filtros canónica (Sección 03 & 04) */}
+      <SurfaceCard tone="lowest" className="p-space-lg space-y-space-md">
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-space-md items-end">
+          <SearchInput
+            id="search-profesor"
+            label="Buscar por Docente"
+            icon="person_search"
+            placeholder="Ej: Dra. Marcela Restrepo..."
             value={nomProf}
             onChange={(e) => setNomProf(e.target.value)}
-            className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            onClear={() => setNomProf('')}
           />
-          <input
-            type="text"
-            placeholder="Materia"
+          <SearchInput
+            id="search-materia"
+            label="Filtrar por Materia o Área"
+            icon="menu_book"
+            placeholder="Ej: Cálculo, Estructuras de Datos..."
             value={materiaFiltro}
             onChange={(e) => setMateriaFiltro(e.target.value)}
-            className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            onClear={() => setMateriaFiltro('')}
           />
-          <button
-            type="button"
-            onClick={() => {
-              setNomProf('');
-              setMateriaFiltro('');
-            }}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg text-sm transition"
+          <Button
+            variant={hayFiltrosActivos ? 'outline' : 'primary'}
+            onClick={limpiarTodosLosFiltros}
+            className="w-full md:w-auto"
           >
-            {nomProf || materiaFiltro ? 'Limpiar Filtros' : 'Buscar'}
-          </button>
+            <Icon className="text-[18px]">{hayFiltrosActivos ? 'close' : 'search'}</Icon>
+            <span>{hayFiltrosActivos ? 'Cancelar Filtros' : 'Buscar'}</span>
+          </Button>
         </div>
-      </div>
 
-      {/* Tutorías Grupales Programadas Abiertas (HU-16) */}
-      {grupales.length > 0 && (
-        <div className="bg-white p-6 rounded-xl shadow-sm border space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+        {hayFiltrosActivos && (
+          <div className="pt-1 flex flex-wrap items-center gap-2">
+            <span className="font-label-md text-[11px] text-outline font-semibold uppercase tracking-wider mr-1">
+              Filtros Activos:
+            </span>
+            {nomProf && (
+              <Badge variant="neutral" onRemove={() => setNomProf('')}>
+                Docente: {nomProf}
+              </Badge>
+            )}
+            {materiaFiltro && (
+              <Badge variant="neutral" onRemove={() => setMateriaFiltro('')}>
+                Materia: {materiaFiltro}
+              </Badge>
+            )}
+            {queryGlobal && (
+              <Badge
+                variant="primary"
+                onRemove={() => router.replace('/estudiante/buscar-tutorias')}
+              >
+                Búsqueda: &ldquo;{queryGlobal}&rdquo;
+              </Badge>
+            )}
+          </div>
+        )}
+      </SurfaceCard>
+
+      {/* Tutorías Grupales Programadas Abiertas (Patrón Canónico Sección 05) */}
+      {grupalesFiltradas.length > 0 && (
+        <section className="space-y-space-md">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <h3 className="text-lg font-bold text-gray-800">
-                Tutorías Grupales Programadas (Inscripción Abierta)
-              </h3>
-              <p className="text-xs text-gray-500">
-                Únete a una tutoría ya programada por un docente de tu carrera
-              </p>
+              <span className="font-label-md text-[11px] uppercase tracking-wider text-outline font-semibold">
+                Sesiones Colaborativas
+              </span>
+              <h2 className="text-xl font-semibold text-on-surface flex items-center gap-2">
+                <Icon className="text-primary text-[22px]">groups</Icon>
+                <span>Tutorías Grupales Programadas</span>
+              </h2>
             </div>
+            <Badge variant="secondary">
+              {grupalesFiltradas.length}{' '}
+              {grupalesFiltradas.length === 1 ? 'sesión abierta' : 'sesiones abiertas'}
+            </Badge>
           </div>
 
           {alertaGrupal && (
-            <div className="p-2.5 bg-blue-50 border border-blue-200 text-blue-800 rounded-lg text-xs font-medium">
-              {alertaGrupal}
-            </div>
+            <CalloutBanner
+              tone={alertaGrupal.tipo === 'ok' ? 'success' : 'danger'}
+              title={alertaGrupal.tipo === 'ok' ? 'Inscripción confirmada' : 'Aviso de inscripción'}
+            >
+              {alertaGrupal.texto}
+            </CalloutBanner>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {grupales.map((tg) => {
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-md">
+            {grupalesFiltradas.map((tg) => {
               const totalInscritos = 1 + (tg.participantes?.length || 0);
               const cupo = tg.cupoMaximo || 10;
+              const lugaresRestantes = Math.max(0, cupo - totalInscritos);
+              const porcentaje = Math.min(100, Math.round((totalInscritos / cupo) * 100));
               const yaSoyParte =
                 tg.estudiante?._id === user?.id ||
                 tg.participantes?.some((p) => p.estudiante?._id === user?.id);
 
+              const nombresInscritos = [
+                tg.estudiante?.nombre,
+                ...(tg.participantes?.map((p) => p.estudiante?.nombre) || []),
+              ].filter(Boolean) as string[];
+
               return (
-                <div
+                <SurfaceCard
                   key={tg._id}
-                  className="p-4 bg-purple-50/40 rounded-lg border border-purple-200 flex flex-col justify-between gap-3"
+                  as="article"
+                  tone="lowest"
+                  interactive
+                  className="p-space-md flex flex-col justify-between"
                 >
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="font-bold text-sm text-gray-800">
-                        {tg.materia} {tg.tema ? `- ${tg.tema}` : ''}
-                      </span>
-                      <span className="text-[11px] font-semibold bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full">
-                        Cupos: {totalInscritos}/{cupo}
+                  <div>
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <Badge variant="secondary" pill={false}>
+                        <Icon className="text-[13px]">groups</Icon>
+                        <span>Tutoría Grupal Abierta</span>
+                      </Badge>
+                      <span className="font-mono text-[12px] text-outline shrink-0">
+                        {tg.hora || 'Por confirmar'}
                       </span>
                     </div>
-                    <p className="text-xs text-gray-600">{tg.descripcion}</p>
-                    <p className="text-xs text-gray-700 pt-1">
-                      <span className="font-semibold">Profesor:</span> {tg.profesor?.nombre} •{' '}
-                      <span className="capitalize">{tg.modalidad || 'Virtual'}</span>
+
+                    <h3 className="font-label-md text-[15px] font-bold text-on-surface mb-1">
+                      {tg.materia} {tg.tema ? `: ${tg.tema}` : ''}
+                    </h3>
+
+                    <p className="font-body-md text-[13px] text-on-surface-variant mb-4 line-clamp-2">
+                      {tg.descripcion}
                     </p>
-                    <p className="text-xs text-gray-700">
-                      <span className="font-semibold">Horario:</span> {tg.hora || 'Por confirmar'}
-                    </p>
+
+                    {/* Barra de Cupos (Sección 05) */}
+                    <div className="p-space-sm bg-surface-container-low rounded-lg space-y-1.5 mb-4">
+                      <div className="flex justify-between items-center font-label-md text-[12px]">
+                        <span className="text-on-surface font-medium">
+                          Cupos Ocupados:{' '}
+                          <strong>
+                            {totalInscritos} de {cupo}
+                          </strong>
+                        </span>
+                        <span
+                          className={`font-bold ${
+                            lugaresRestantes <= 3 ? 'text-tertiary' : 'text-primary'
+                          }`}
+                        >
+                          {lugaresRestantes === 0
+                            ? 'Sin cupos'
+                            : lugaresRestantes <= 4
+                            ? `¡Últimos ${lugaresRestantes} lugares!`
+                            : `${lugaresRestantes} disponibles`}
+                        </span>
+                      </div>
+                      <div className="w-full bg-surface-container-highest rounded-full h-2.5 overflow-hidden">
+                        <div
+                          className="bg-primary h-full rounded-full transition-all duration-500"
+                          style={{ width: `${porcentaje}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-3 text-on-surface-variant font-label-md text-[12px]">
+                      <span className="flex items-center gap-1 capitalize">
+                        <Icon className="text-[16px] text-primary">
+                          {tg.modalidad === 'presencial' ? 'location_on' : 'videocam'}
+                        </Icon>
+                        <span>{tg.modalidad || 'Virtual'}</span>
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Icon className="text-[16px] text-outline">person</Icon>
+                        <span className="truncate">{tg.profesor?.nombre || 'Docente'}</span>
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="flex justify-end">
+                  <div className="mt-space-md pt-space-sm flex items-center justify-between gap-2">
+                    <div className="flex -space-x-2 overflow-hidden">
+                      {nombresInscritos.slice(0, 2).map((nom, idx) => (
+                        <div
+                          key={idx}
+                          className={`inline-flex h-7 w-7 rounded-full text-[10px] font-bold items-center justify-center ring-2 ring-surface-container-lowest ${
+                            idx === 0
+                              ? 'bg-primary-container text-on-primary'
+                              : 'bg-secondary text-on-secondary'
+                          }`}
+                          title={nom}
+                        >
+                          {getInitials(nom)}
+                        </div>
+                      ))}
+                      {totalInscritos > 2 && (
+                        <div className="inline-flex h-7 w-7 rounded-full bg-tertiary-container text-white text-[10px] font-bold items-center justify-center ring-2 ring-surface-container-lowest">
+                          +{totalInscritos - 2}
+                        </div>
+                      )}
+                    </div>
+
                     {yaSoyParte ? (
-                      <span className="text-xs font-semibold text-emerald-700 bg-emerald-100 px-3 py-1.5 rounded-lg">
-                        ✓ Ya estás inscrito
-                      </span>
+                      <Badge variant="success" dot>
+                        Inscrito
+                      </Badge>
                     ) : totalInscritos >= cupo ? (
-                      <span className="text-xs font-semibold text-gray-500 bg-gray-200 px-3 py-1.5 rounded-lg">
-                        Cupo lleno
-                      </span>
+                      <Button variant="subtle" size="sm" disabled>
+                        <Icon className="text-[15px]">lock</Icon>
+                        <span>Sin cupos</span>
+                      </Button>
                     ) : (
-                      <button
-                        type="button"
+                      <Button
+                        variant="tonal"
+                        size="sm"
                         onClick={() => inscribirseEnGrupal(tg._id)}
-                        className="bg-purple-600 hover:bg-purple-700 text-white text-xs px-4 py-1.5 rounded-lg font-medium transition"
                       >
-                        + Inscribirme a esta tutoría
-                      </button>
+                        <span>Inscribirme al Taller</span>
+                      </Button>
                     )}
                   </div>
-                </div>
+                </SurfaceCard>
               );
             })}
           </div>
-        </div>
+        </section>
       )}
 
-      {/* Resultados de Profesores */}
-      <div className="bg-white p-6 rounded-xl shadow-sm border space-y-4">
-        <h3 className="text-lg font-bold text-gray-800">Profesores Disponibles</h3>
+      {/* Resultados de Profesores (Patrón Canónico Tarjeta de Tutor - Sección 05) */}
+      <section className="space-y-space-md">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <span className="font-label-md text-[11px] uppercase tracking-wider text-outline font-semibold">
+              Mentoría Individual &amp; Grupal
+            </span>
+            <h2 className="text-xl font-semibold text-on-surface">Profesores Disponibles</h2>
+          </div>
+          <Badge variant="neutral">
+            {profesoresFiltrados.length}{' '}
+            {profesoresFiltrados.length === 1 ? 'profesor disponible' : 'profesores disponibles'}
+          </Badge>
+        </div>
 
         {profesoresFiltrados.length === 0 ? (
-          <p className="text-gray-500 text-sm">
-            No se encontraron profesores disponibles para tu carrera
-            {user?.carrera ? ` (${user.carrera})` : ''}.
-          </p>
+          <SurfaceCard tone="lowest" className="p-10 text-center space-y-2">
+            <Icon className="text-outline text-[36px]">search_off</Icon>
+            <p className="text-sm text-on-surface-variant">
+              No se encontraron profesores disponibles con ese criterio
+              {user?.carrera ? ` para ${user.carrera}` : ''}.
+            </p>
+          </SurfaceCard>
         ) : (
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-md">
             {profesoresFiltrados.map((prof) => (
-              <div
+              <SurfaceCard
                 key={prof._id}
-                className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 p-4 bg-gray-50 rounded-lg border"
+                as="article"
+                tone="lowest"
+                interactive
+                className="overflow-hidden flex flex-col justify-between"
               >
-                <div className="space-y-1.5">
-                  <div>
-                    <h4 className="font-bold text-gray-800">{prof.nombre}</h4>
-                    <p className="text-xs text-gray-500">{prof.email}</p>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2 pt-1">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200">
-                      Escuela: {prof.escuela || 'Sin asignar'}
-                    </span>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-purple-50 text-purple-700 border border-purple-200">
-                      Carrera: {prof.carrera || 'Sin asignar'}
-                    </span>
-                  </div>
-
-                  {prof.materias && prof.materias.length > 0 && (
-                    <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                      <span className="text-xs font-semibold text-gray-600">Materias:</span>
-                      {prof.materias.map((mat, idx) => (
-                        <span
-                          key={idx}
-                          className="px-2 py-0.5 rounded text-[11px] font-medium bg-white text-gray-700 border border-gray-300"
-                        >
-                          {mat}
+                <div>
+                  {/* Cabecera Tonal de Tarjeta con Badge */}
+                  <div className="relative h-24 bg-gradient-to-br from-primary/15 via-primary-fixed/60 to-surface-container">
+                    <div className="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-transparent to-transparent" />
+                    <div className="absolute top-3 right-3">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface-container-lowest/90 backdrop-blur text-primary font-label-md text-[11px] font-bold shadow-xs">
+                        <Icon filled className="text-[13px] text-amber-500">
+                          verified
+                        </Icon>
+                        <span>
+                          {prof.horarios.length}{' '}
+                          {prof.horarios.length === 1 ? 'franja' : 'franjas'}
                         </span>
-                      ))}
+                      </span>
                     </div>
-                  )}
+                  </div>
+
+                  {/* Cuerpo de Tarjeta de Tutor */}
+                  <div className="px-space-md pt-1 pb-space-md">
+                    <div className="flex items-start gap-3">
+                      <div className="w-14 h-14 -mt-8 rounded-full shadow-md bg-surface-container-lowest p-0.5 relative z-10 shrink-0">
+                        <div className="w-full h-full rounded-full bg-primary text-on-primary font-bold text-base flex items-center justify-center">
+                          {getInitials(prof.nombre)}
+                        </div>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-label-md text-label-md font-bold text-on-surface leading-tight group-hover:text-primary transition-colors truncate">
+                          {prof.nombre}
+                        </h3>
+                        <span className="block font-label-md text-[12px] text-on-surface-variant truncate">
+                          {prof.carrera || prof.escuela || 'Docente Universitario'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <p className="mt-3 font-body-md text-[12px] text-on-surface-variant flex items-center gap-1.5 truncate">
+                      <Icon className="text-[15px] text-outline">mail</Icon>
+                      <span className="truncate">{prof.email}</span>
+                    </p>
+
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {prof.escuela && (
+                        <span className="px-2 py-0.5 rounded bg-primary-fixed text-on-primary-fixed font-label-md text-[11px] font-medium">
+                          {prof.escuela}
+                        </span>
+                      )}
+                      {prof.materias && prof.materias.length > 0 ? (
+                        prof.materias.map((mat, idx) => (
+                          <span
+                            key={idx}
+                            className="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-md text-[11px]"
+                          >
+                            {mat}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="px-2 py-0.5 rounded bg-surface-container text-outline font-label-md text-[11px]">
+                          Tutoría General
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
-                <div className="flex gap-2 self-end sm:self-center shrink-0">
+                {/* Pie de Tarjeta en surface-container-low */}
+                <div className="p-space-md bg-surface-container-low flex items-center justify-between gap-2">
                   <button
+                    type="button"
                     onClick={() => setProfesorSeleccionado(prof)}
-                    className="bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs px-3 py-1.5 rounded-md font-medium"
+                    className="font-label-md text-[12px] font-semibold text-on-surface-variant hover:text-primary inline-flex items-center gap-1 transition-colors cursor-pointer"
                   >
-                    Ver
+                    <Icon className="text-[16px] text-primary">calendar_month</Icon>
+                    <span>Ver Horarios ({prof.horarios.length})</span>
                   </button>
-                  <button
+                  <Button
+                    variant="primary"
+                    size="sm"
                     onClick={() => abrirSolicitud(prof)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded-md font-medium"
                   >
-                    + Tuto
-                  </button>
+                    <Icon className="text-[16px]">calendar_add_on</Icon>
+                    <span>Solicitar Sesión</span>
+                  </Button>
                 </div>
-              </div>
+              </SurfaceCard>
             ))}
           </div>
         )}
-      </div>
+      </section>
 
+      {/* Franjas Horarias Seleccionables del Profesor (Sección 04) */}
       {profesorSeleccionado && (
-        <div className="bg-white p-6 rounded-xl shadow-sm border space-y-4">
-          <div className="flex justify-between items-center border-b pb-2">
+        <SurfaceCard tone="lowest" className="p-space-lg space-y-space-md">
+          <div className="flex justify-between items-start gap-4 pb-3 border-b border-surface-container">
             <div>
-              <h3 className="text-lg font-bold text-gray-800">
-                {profesorSeleccionado.nombre} - Horarios Disponibles
+              <span className="font-label-md text-[11px] text-outline font-semibold uppercase tracking-wider block">
+                Seleccionar Franja Horaria
+              </span>
+              <h3 className="text-lg font-bold text-on-surface flex items-center gap-2 mt-0.5">
+                <Icon className="text-primary text-[20px]">event_available</Icon>
+                <span>{profesorSeleccionado.nombre}</span>
               </h3>
-              <p className="text-xs text-gray-500">
-                {profesorSeleccionado.escuela || 'Escuela no asignada'} •{' '}
-                {profesorSeleccionado.carrera || 'Carrera no asignada'}
+              <p className="text-xs text-on-surface-variant mt-0.5">
+                Haz clic en una franja horaria disponible para agendar tu tutoría directamente.
               </p>
             </div>
-            <button
+            <Button
+              variant="subtle"
+              size="sm"
               onClick={() => setProfesorSeleccionado(null)}
-              className="text-xs text-gray-500 hover:text-gray-700"
             >
-              Cerrar
-            </button>
+              <Icon className="text-[16px]">close</Icon>
+              <span>Cerrar</span>
+            </Button>
           </div>
 
           {profesorSeleccionado.horarios.length === 0 ? (
-            <p className="text-xs text-gray-500">
-              Este profesor no tiene bloques de horario configurados aún.
-            </p>
+            <CalloutBanner tone="info" title="Sin franjas fijas registradas">
+              Este docente no tiene bloques de horario fijos publicados. Puedes enviar una
+              solicitud proponiendo el horario que mejor se ajuste a tu disponibilidad.
+            </CalloutBanner>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
               {profesorSeleccionado.horarios.map((h) => (
-                <div
+                <button
                   key={h._id}
-                  className="p-3 bg-blue-50 border border-blue-200 rounded-lg flex justify-between items-center"
+                  type="button"
+                  onClick={() => abrirSolicitud(profesorSeleccionado, h)}
+                  className="py-2.5 px-3 rounded-lg bg-surface-container hover:bg-primary-fixed hover:text-primary transition-all text-on-surface font-label-md text-[12px] font-semibold flex items-center justify-between gap-2 cursor-pointer group active:scale-[0.98]"
                 >
-                  <div>
-                    <span className="font-bold text-xs text-blue-900 block">{h.dia}</span>
-                    <span className="text-xs text-blue-700">
-                      {h.horaInicio} - {h.horaFin}
+                  <span className="flex items-center gap-1.5">
+                    <Icon className="text-[16px] text-primary">schedule</Icon>
+                    <span>
+                      {h.dia} {h.horaInicio} - {h.horaFin}
                     </span>
-                  </div>
-                  <button
-                    onClick={() => abrirSolicitud(profesorSeleccionado, h)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-2 py-1 rounded font-medium"
-                  >
-                    Solicitar
-                  </button>
-                </div>
+                  </span>
+                  <Icon className="text-[15px] text-outline group-hover:text-primary">
+                    arrow_forward
+                  </Icon>
+                </button>
               ))}
             </div>
           )}
-        </div>
+        </SurfaceCard>
       )}
 
-      {modalSolicitud && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-lg border max-w-md w-full p-6 space-y-4">
-            <div>
-              <h3 className="text-lg font-bold text-gray-800">
-                Solicitar Tutoría a {modalSolicitud.profesor.nombre}
-              </h3>
-              <p className="text-xs text-gray-500">
-                {modalSolicitud.profesor.carrera || 'Carrera general'}
-              </p>
-            </div>
+      {/* Modal Canónico de Solicitud de Tutoría (Sección 06) */}
+      <Modal
+        open={Boolean(modalSolicitud)}
+        onClose={() => setModalSolicitud(null)}
+        title={`Solicitar Tutoría a ${modalSolicitud?.profesor.nombre || ''}`}
+        subtitle={modalSolicitud?.profesor.carrera || modalSolicitud?.profesor.escuela || 'Sesión Académica'}
+        icon="calendar_add_on"
+        tone="primary"
+        footer={
+          <>
+            <Button
+              type="button"
+              variant="subtle"
+              size="sm"
+              onClick={() => setModalSolicitud(null)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              form="form-solicitar-tutoria"
+              variant="primary"
+              size="sm"
+              loading={enviandoSolicitud}
+            >
+              <Icon className="text-[16px]">send</Icon>
+              <span>Enviar Petición</span>
+            </Button>
+          </>
+        }
+      >
+        {mensaje && (
+          <CalloutBanner
+            tone={mensaje.tipo === 'ok' ? 'success' : 'danger'}
+            title={mensaje.tipo === 'ok' ? 'Solicitud registrada' : 'Error al enviar'}
+          >
+            {mensaje.texto}
+          </CalloutBanner>
+        )}
 
-            {mensaje && <p className="text-xs font-medium text-blue-600">{mensaje}</p>}
+        <form id="form-solicitar-tutoria" onSubmit={enviarSolicitud} className="space-y-3.5">
+          {modalSolicitud?.profesor.materias && modalSolicitud.profesor.materias.length > 0 ? (
+            <FormSelect
+              id="solicitud-materia"
+              label="Materia"
+              icon="menu_book"
+              value={materia}
+              onChange={(e) => setMateria(e.target.value)}
+              required
+            >
+              {modalSolicitud.profesor.materias.map((mat, i) => (
+                <option key={i} value={mat}>
+                  {mat}
+                </option>
+              ))}
+            </FormSelect>
+          ) : (
+            <FormInput
+              id="solicitud-materia-input"
+              label="Materia"
+              icon="menu_book"
+              value={materia}
+              onChange={(e) => setMateria(e.target.value)}
+              placeholder="Nombre de la materia"
+              required
+            />
+          )}
 
-            <form onSubmit={enviarSolicitud} className="space-y-3">
-              <div>
-                <label className="block text-xs font-medium text-gray-700">Materia</label>
-                {modalSolicitud.profesor.materias && modalSolicitud.profesor.materias.length > 0 ? (
-                  <select
-                    value={materia}
-                    onChange={(e) => setMateria(e.target.value)}
-                    className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-xs text-gray-900 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    required
-                  >
-                    {modalSolicitud.profesor.materias.map((mat, i) => (
-                      <option key={i} value={mat}>
-                        {mat}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <input
-                    type="text"
-                    value={materia}
-                    onChange={(e) => setMateria(e.target.value)}
-                    placeholder="Nombre de la materia"
-                    className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-xs text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    required
-                  />
-                )}
-              </div>
+          <FormInput
+            id="solicitud-tema"
+            label="Tema Específico"
+            icon="topic"
+            value={tema}
+            onChange={(e) => setTema(e.target.value)}
+            placeholder="Ej: Derivadas parciales, Árboles AVL..."
+            required
+          />
 
-              <div>
-                <label className="block text-xs font-medium text-gray-700">Tema Específico</label>
-                <input
-                  type="text"
-                  value={tema}
-                  onChange={(e) => setTema(e.target.value)}
-                  className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-xs text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  required
-                />
-              </div>
+          <FormInput
+            id="solicitud-hora"
+            label="Horario / Fecha Propuesta"
+            icon="schedule"
+            value={hora}
+            onChange={(e) => setHora(e.target.value)}
+            placeholder="Ej: Lunes 08:00 - 10:00"
+            hint="El docente confirmará la disponibilidad o propondrá un ajuste."
+            required
+          />
 
-              <div>
-                <label className="block text-xs font-medium text-gray-700">
-                  Horario / Fecha Propuesta
-                </label>
-                <input
-                  type="text"
-                  value={hora}
-                  onChange={(e) => setHora(e.target.value)}
-                  placeholder="Ej: Lunes 08:00 - 10:00"
-                  className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-xs text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-gray-700">
-                  Descripción de la duda
-                </label>
-                <textarea
-                  value={descripcion}
-                  onChange={(e) => setDescripcion(e.target.value)}
-                  rows={3}
-                  className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-xs text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  required
-                />
-              </div>
-
-              <div className="flex gap-2 pt-2 justify-end">
-                <button
-                  type="button"
-                  onClick={() => setModalSolicitud(null)}
-                  className="bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs px-4 py-2 rounded-lg font-medium"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-4 py-2 rounded-lg font-medium"
-                >
-                  Enviar Petición
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+          <FormTextarea
+            id="solicitud-descripcion"
+            label="Descripción de la duda"
+            value={descripcion}
+            onChange={(e) => setDescripcion(e.target.value)}
+            rows={3}
+            placeholder="Describe brevemente los ejercicios o conceptos que deseas revisar..."
+            required
+          />
+        </form>
+      </Modal>
     </div>
+  );
+}
+
+export default function BuscarTutoriasPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="max-w-6xl mx-auto py-8 text-sm text-on-surface-variant">
+          Cargando buscador de tutorías...
+        </div>
+      }
+    >
+      <BuscarTutoriasContent />
+    </Suspense>
   );
 }

@@ -3,6 +3,12 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../../../context/AuthContext';
 import api from '../../../../lib/api';
+import { Icon } from '../../../../components/ui/Icon';
+import { PageHeader } from '../../../../components/ui/PageHeader';
+import { SearchInput } from '../../../../components/ui/SearchInput';
+import { SurfaceCard } from '../../../../components/ui/SurfaceCard';
+import { Badge } from '../../../../components/ui/Badge';
+import { CalloutBanner } from '../../../../components/ui/CalloutBanner';
 
 interface Tutoria {
   _id: string;
@@ -29,6 +35,7 @@ export default function MisTutoriasEstudiantePage() {
   const { user } = useAuth();
   const [tutorias, setTutorias] = useState<Tutoria[]>([]);
   const [pestana, setPestana] = useState<'activas' | 'historial'>('activas');
+  const [busqueda, setBusqueda] = useState('');
   const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
@@ -55,170 +62,302 @@ export default function MisTutoriasEstudiantePage() {
     return part?.asistio;
   };
 
-  const listaMostrar = tutorias.filter((t) =>
-    pestana === 'activas' ? t.estado === 'aceptada' : t.estado === 'finalizada'
-  );
+  const listaMostrar = tutorias
+    .filter((t) => (pestana === 'activas' ? t.estado === 'aceptada' : t.estado === 'finalizada'))
+    .filter((t) => {
+      const q = busqueda.toLowerCase();
+      if (!q) return true;
+      return (
+        t.materia.toLowerCase().includes(q) ||
+        (t.tema && t.tema.toLowerCase().includes(q)) ||
+        (t.profesor?.nombre && t.profesor.nombre.toLowerCase().includes(q))
+      );
+    });
 
   if (cargando) {
-    return <div className="text-gray-500">Cargando mis tutorías...</div>;
+    return (
+      <div className="max-w-6xl mx-auto py-8 text-sm text-on-surface-variant flex items-center gap-2">
+        <Icon className="text-primary animate-pulse">hourglass_top</Icon>
+        <span>Cargando mis tutorías...</span>
+      </div>
+    );
   }
 
-  return (
-    <div className="space-y-6 max-w-5xl mx-auto">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">Mis Tutorías e Historial</h1>
-          <p className="text-sm text-gray-500">
-            Consulta tus sesiones programadas, enlaces de reunión, asistencia y clases finalizadas
-          </p>
-        </div>
+  const totalActivas = tutorias.filter((t) => t.estado === 'aceptada').length;
+  const totalHistorial = tutorias.filter((t) => t.estado === 'finalizada').length;
 
-        <div className="flex bg-white p-1 rounded-lg border self-start">
-          <button
-            onClick={() => setPestana('activas')}
-            className={`px-3 py-1.5 rounded-md text-xs font-medium transition ${
-              pestana === 'activas'
-                ? 'bg-blue-600 text-white'
-                : 'text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            Próximas / Activas ({tutorias.filter((t) => t.estado === 'aceptada').length})
-          </button>
-          <button
-            onClick={() => setPestana('historial')}
-            className={`px-3 py-1.5 rounded-md text-xs font-medium transition ${
-              pestana === 'historial'
-                ? 'bg-blue-600 text-white'
-                : 'text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            Historial ({tutorias.filter((t) => t.estado === 'finalizada').length})
-          </button>
-        </div>
+  return (
+    <div className="space-y-space-lg max-w-6xl mx-auto">
+      <PageHeader
+        eyebrow="03. Agenda Académica"
+        title="Mis Tutorías e Historial"
+        description="Consulta tus sesiones programadas, enlaces de reunión, asistencia registrada y clases finalizadas."
+        actions={
+          <div className="flex bg-surface-container-low p-1 rounded-xl">
+            <button
+              type="button"
+              onClick={() => setPestana('activas')}
+              className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg font-label-md text-[13px] font-semibold transition-all cursor-pointer ${
+                pestana === 'activas'
+                  ? 'bg-primary text-on-primary shadow-sm'
+                  : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+              }`}
+            >
+              <Icon className="text-[16px]">event_available</Icon>
+              <span>Próximas / Activas ({totalActivas})</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setPestana('historial')}
+              className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg font-label-md text-[13px] font-semibold transition-all cursor-pointer ${
+                pestana === 'historial'
+                  ? 'bg-primary text-on-primary shadow-sm'
+                  : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+              }`}
+            >
+              <Icon className="text-[16px]">history_edu</Icon>
+              <span>Historial ({totalHistorial})</span>
+            </button>
+          </div>
+        }
+      />
+
+      {/* Resumen KPI Cards (Patrón Canónico Sección 05) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
+        <SurfaceCard
+          tone="lowest"
+          className="p-space-md flex items-center justify-between"
+        >
+          <div>
+            <span className="font-label-md text-[11px] uppercase text-outline font-semibold tracking-wider block">
+              Sesiones Activas Programadas
+            </span>
+            <div className="flex items-baseline gap-2 mt-1">
+              <span className="font-headline-lg text-2xl font-bold text-on-surface">
+                {totalActivas}
+              </span>
+              <Badge variant="success" dot>
+                Confirmadas
+              </Badge>
+            </div>
+            <span className="text-on-surface-variant font-label-md text-[11px] mt-1 block">
+              Disponibles con acceso a sala o aula
+            </span>
+          </div>
+          <div className="w-12 h-12 rounded-xl bg-primary-fixed flex items-center justify-center text-primary shrink-0">
+            <Icon className="text-[24px]">calendar_month</Icon>
+          </div>
+        </SurfaceCard>
+
+        <SurfaceCard
+          tone="lowest"
+          className="p-space-md flex items-center justify-between"
+        >
+          <div>
+            <span className="font-label-md text-[11px] uppercase text-outline font-semibold tracking-wider block">
+              Tutorías Completadas
+            </span>
+            <div className="flex items-baseline gap-2 mt-1">
+              <span className="font-headline-lg text-2xl font-bold text-on-surface">
+                {totalHistorial}
+              </span>
+              <Badge variant="primary">Historial</Badge>
+            </div>
+            <span className="text-on-surface-variant font-label-md text-[11px] mt-1 block">
+              Con registro de asistencia y grabaciones
+            </span>
+          </div>
+          <div className="w-12 h-12 rounded-xl bg-secondary-fixed flex items-center justify-center text-secondary shrink-0">
+            <Icon className="text-[24px]">verified</Icon>
+          </div>
+        </SurfaceCard>
       </div>
 
+      {tutorias.length > 0 && (
+        <SurfaceCard tone="lowest" className="p-space-md">
+          <div className="max-w-lg">
+            <SearchInput
+              placeholder="Filtrar sesiones por materia, tema o profesor..."
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              onClear={() => setBusqueda('')}
+            />
+          </div>
+        </SurfaceCard>
+      )}
+
       {listaMostrar.length === 0 ? (
-        <div className="bg-white p-8 rounded-xl shadow-sm border text-center text-gray-500 text-sm">
-          {pestana === 'activas'
-            ? 'No tienes tutorías activas programadas en este momento.'
-            : 'Aún no tienes tutorías finalizadas en tu historial.'}
-        </div>
+        <SurfaceCard tone="lowest" className="p-10 text-center space-y-2">
+          <Icon className="text-outline text-[36px]">
+            {pestana === 'activas' ? 'event_busy' : 'history'}
+          </Icon>
+          <p className="text-sm text-on-surface-variant">
+            {busqueda
+              ? `No se encontraron tutorías que coincidan con "${busqueda}".`
+              : pestana === 'activas'
+              ? 'No tienes tutorías activas programadas en este momento.'
+              : 'Aún no tienes tutorías finalizadas en tu historial.'}
+          </p>
+        </SurfaceCard>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-space-md">
           {listaMostrar.map((tutoria) => {
             const miAsistencia = obtenerMiAsistencia(tutoria);
             return (
-              <div key={tutoria._id} className="bg-white p-6 rounded-xl shadow-sm border space-y-4">
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
-                  <div className="space-y-1">
+              <SurfaceCard
+                key={tutoria._id}
+                as="article"
+                tone="lowest"
+                interactive
+                className="p-space-lg space-y-4"
+              >
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+                  <div className="space-y-2 min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="text-lg font-bold text-gray-800">
-                        {tutoria.materia} {tutoria.tema ? `- ${tutoria.tema}` : ''}
-                      </h3>
-                      <span className="text-[11px] px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200 capitalize">
-                        {tutoria.modalidad || 'Virtual'}
-                      </span>
-                      <span className="text-[11px] px-2 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-200 capitalize">
-                        {tutoria.tipo || 'Individual'}
-                      </span>
+                      <h2 className="font-label-md text-base font-bold text-on-surface group-hover:text-primary transition-colors">
+                        {tutoria.materia} {tutoria.tema ? `• ${tutoria.tema}` : ''}
+                      </h2>
+                      <Badge variant="primary" pill={false} className="capitalize">
+                        <Icon className="text-[14px]">
+                          {tutoria.modalidad === 'presencial' ? 'location_on' : 'videocam'}
+                        </Icon>
+                        <span>{tutoria.modalidad || 'Virtual'}</span>
+                      </Badge>
+                      <Badge variant="secondary" pill={false} className="capitalize">
+                        <Icon className="text-[14px]">
+                          {tutoria.tipo === 'grupal' ? 'groups' : 'person'}
+                        </Icon>
+                        <span>{tutoria.tipo || 'Individual'}</span>
+                      </Badge>
                     </div>
 
-                    <p className="text-gray-600 text-sm">{tutoria.descripcion}</p>
-                    <p className="text-xs text-gray-500">
-                      Profesor:{' '}
-                      <span className="font-medium text-gray-700">{tutoria.profesor?.nombre}</span> (
-                      {tutoria.profesor?.email}) • Horario:{' '}
-                      <span className="font-medium text-gray-700">{tutoria.hora || 'Por definir'}</span>
+                    <p className="font-body-md text-on-surface-variant text-[13px] leading-relaxed">
+                      {tutoria.descripcion}
                     </p>
+
+                    <div className="flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-on-surface-variant pt-1">
+                      <span className="inline-flex items-center gap-1.5">
+                        <Icon className="text-[16px] text-primary">person</Icon>
+                        <span>Docente:</span>
+                        <strong className="font-semibold text-on-surface">
+                          {tutoria.profesor?.nombre}
+                        </strong>{' '}
+                        <span className="text-outline">({tutoria.profesor?.email})</span>
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <Icon className="text-[16px] text-outline">schedule</Icon>
+                        <span>Horario:</span>
+                        <strong className="font-semibold text-on-surface">
+                          {tutoria.hora || 'Por definir'}
+                        </strong>
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="flex sm:flex-col items-end gap-1.5">
-                    <span
-                      className={`px-3 py-1 text-xs rounded-full font-medium capitalize ${
-                        tutoria.estado === 'aceptada'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-blue-100 text-blue-800'
-                      }`}
+                  <div className="flex sm:flex-col items-center sm:items-end gap-2 shrink-0">
+                    <Badge
+                      variant={tutoria.estado === 'aceptada' ? 'success' : 'primary'}
+                      dot
+                      className="capitalize"
                     >
-                      {tutoria.estado}
-                    </span>
+                      {tutoria.estado === 'aceptada' ? 'Confirmada' : 'Finalizada'}
+                    </Badge>
 
-                    <span
-                      className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full ${
+                    <Badge
+                      variant={
                         miAsistencia === true
-                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                          ? 'success'
                           : miAsistencia === false
-                          ? 'bg-red-50 text-red-700 border border-red-200'
-                          : 'bg-gray-100 text-gray-500'
-                      }`}
+                          ? 'error'
+                          : 'neutral'
+                      }
                     >
-                      Asistencia:{' '}
-                      {miAsistencia === true
-                        ? 'Asististe'
-                        : miAsistencia === false
-                        ? 'No asististe'
-                        : 'Pendiente'}
-                    </span>
+                      <Icon className="text-[14px]">
+                        {miAsistencia === true
+                          ? 'check_circle'
+                          : miAsistencia === false
+                          ? 'cancel'
+                          : 'schedule'}
+                      </Icon>
+                      <span>
+                        Asistencia:{' '}
+                        {miAsistencia === true
+                          ? 'Asististe'
+                          : miAsistencia === false
+                          ? 'No asististe'
+                          : 'Pendiente'}
+                      </span>
+                    </Badge>
                   </div>
                 </div>
 
                 {tutoria.comentarioProfesor && (
-                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-900">
-                    <span className="font-bold">
-                      {tutoria.modalidad === 'presencial'
-                        ? 'Ubicación / Salón: '
-                        : 'Enlace / Indicaciones de la sesión: '}
-                    </span>
+                  <CalloutBanner
+                    tone="info"
+                    icon={tutoria.modalidad === 'presencial' ? 'location_on' : 'videocam'}
+                    title={
+                      tutoria.modalidad === 'presencial'
+                        ? 'Ubicación / Salón Asignado'
+                        : 'Enlace e Indicaciones de la Sesión'
+                    }
+                  >
                     {tutoria.comentarioProfesor.startsWith('http') ? (
                       <a
                         href={tutoria.comentarioProfesor}
                         target="_blank"
                         rel="noreferrer"
-                        className="underline font-medium"
+                        className="underline font-semibold text-primary hover:text-primary-container break-all inline-flex items-center gap-1"
                       >
-                        {tutoria.comentarioProfesor}
+                        <span>{tutoria.comentarioProfesor}</span>
+                        <Icon className="text-[14px]">open_in_new</Icon>
                       </a>
                     ) : (
                       tutoria.comentarioProfesor
                     )}
-                  </div>
+                  </CalloutBanner>
                 )}
 
                 {tutoria.enlaceGrabacion && (
-                  <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-900">
-                    <span className="font-bold">Grabación de la clase: </span>
+                  <CalloutBanner
+                    tone="success"
+                    icon="play_circle"
+                    title="Grabación de la Clase Disponible"
+                  >
                     <a
                       href={tutoria.enlaceGrabacion}
                       target="_blank"
                       rel="noreferrer"
-                      className="underline font-medium"
+                      className="underline font-semibold text-[#166534] hover:opacity-80 break-all inline-flex items-center gap-1"
                     >
-                      {tutoria.enlaceGrabacion}
+                      <span>{tutoria.enlaceGrabacion}</span>
+                      <Icon className="text-[14px]">open_in_new</Icon>
                     </a>
-                  </div>
+                  </CalloutBanner>
                 )}
 
                 {tutoria.recursos && tutoria.recursos.length > 0 && (
-                  <div className="border-t pt-3">
-                    <h4 className="text-xs font-bold text-gray-700 mb-2">
-                      Documentos y materiales de la clase:
-                    </h4>
-                    <div className="space-y-1">
+                  <div className="p-space-md rounded-xl bg-surface-container-low space-y-2">
+                    <h3 className="font-label-md text-xs font-bold text-on-surface flex items-center gap-1.5">
+                      <Icon className="text-[16px] text-primary">folder</Icon>
+                      <span>Documentos y Materiales de la Sesión</span>
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {tutoria.recursos.map((link, idx) => (
                         <a
                           key={idx}
                           href={link}
                           target="_blank"
                           rel="noreferrer"
-                          className="block text-xs text-blue-600 underline truncate"
+                          className="p-2.5 rounded-lg bg-surface-container-lowest hover:bg-primary-fixed/40 flex items-center justify-between gap-2 text-xs text-primary font-medium transition-colors"
                         >
-                          {link}
+                          <span className="truncate">{link}</span>
+                          <Icon className="text-[16px] shrink-0">download</Icon>
                         </a>
                       ))}
                     </div>
                   </div>
                 )}
-              </div>
+              </SurfaceCard>
             );
           })}
         </div>

@@ -2,6 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import api from '../../../../lib/api';
+import { Icon } from '../../../../components/ui/Icon';
+import { PageHeader } from '../../../../components/ui/PageHeader';
+import { SearchInput } from '../../../../components/ui/SearchInput';
+import { FormSelect } from '../../../../components/ui/FormField';
+import { SurfaceCard } from '../../../../components/ui/SurfaceCard';
+import { Badge } from '../../../../components/ui/Badge';
+import { CalloutBanner } from '../../../../components/ui/CalloutBanner';
 
 interface EstudianteInfo {
   _id: string;
@@ -26,6 +33,15 @@ interface Tutoria {
   participantes?: { estudiante: EstudianteInfo; asistio?: boolean | null }[];
 }
 
+function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() || '')
+    .join('');
+}
+
 export default function MisTutoriasProfesorPage() {
   const [tutorias, setTutorias] = useState<Tutoria[]>([]);
   const [filtroMateria, setFiltroMateria] = useState('');
@@ -36,7 +52,9 @@ export default function MisTutoriasProfesorPage() {
     const cargarTutorias = async () => {
       try {
         const res = await api.get('/tutorias');
-        setTutorias(res.data.filter((t: Tutoria) => t.estado === 'finalizada' || t.estado === 'aceptada'));
+        setTutorias(
+          res.data.filter((t: Tutoria) => t.estado === 'finalizada' || t.estado === 'aceptada')
+        );
       } catch (err) {
         console.error(err);
       } finally {
@@ -47,173 +65,331 @@ export default function MisTutoriasProfesorPage() {
   }, []);
 
   const filtradas = tutorias.filter((t) => {
-    const okMat = t.materia.toLowerCase().includes(filtroMateria.toLowerCase());
+    const q = filtroMateria.toLowerCase();
+    const okMat =
+      !q ||
+      t.materia.toLowerCase().includes(q) ||
+      (t.tema && t.tema.toLowerCase().includes(q)) ||
+      (t.estudiante?.nombre && t.estudiante.nombre.toLowerCase().includes(q));
     const okMod = !filtroModalidad || t.modalidad === filtroModalidad;
     return okMat && okMod;
   });
 
   if (cargando) {
-    return <div className="text-gray-500">Cargando historial de tutorías...</div>;
+    return (
+      <div className="max-w-6xl mx-auto py-8 text-sm text-on-surface-variant flex items-center gap-2">
+        <Icon className="text-primary animate-pulse">hourglass_top</Icon>
+        <span>Cargando historial de tutorías...</span>
+      </div>
+    );
   }
 
+  const totalFinalizadas = tutorias.filter((t) => t.estado === 'finalizada').length;
+  const totalEnCurso = tutorias.filter((t) => t.estado === 'aceptada').length;
+
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-800">Historial de Tutorías Dictadas</h1>
-        <p className="text-sm text-gray-500">
-          Registro de sesiones realizadas, asistencias, grabaciones y material compartido
-        </p>
+    <div className="space-y-space-lg max-w-6xl mx-auto">
+      <PageHeader
+        eyebrow="03. Registro Académico"
+        title="Historial de Tutorías Dictadas"
+        description="Consulta el registro de sesiones realizadas, control de asistencias, grabaciones y material compartido."
+      />
+
+      {/* Resumen KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-space-md">
+        <SurfaceCard tone="lowest" className="p-space-md flex items-center justify-between">
+          <div>
+            <span className="font-label-md text-[11px] uppercase text-outline font-semibold tracking-wider block">
+              Total Sesiones
+            </span>
+            <span className="font-headline-lg text-2xl font-bold text-on-surface mt-1 block">
+              {tutorias.length}
+            </span>
+            <span className="text-on-surface-variant font-label-md text-[11px] mt-0.5 block">
+              Individuales y grupales
+            </span>
+          </div>
+          <div className="w-12 h-12 rounded-xl bg-primary-fixed flex items-center justify-center text-primary shrink-0">
+            <Icon className="text-[24px]">school</Icon>
+          </div>
+        </SurfaceCard>
+
+        <SurfaceCard tone="lowest" className="p-space-md flex items-center justify-between">
+          <div>
+            <span className="font-label-md text-[11px] uppercase text-outline font-semibold tracking-wider block">
+              Tutorías Finalizadas
+            </span>
+            <div className="flex items-baseline gap-2 mt-1">
+              <span className="font-headline-lg text-2xl font-bold text-on-surface">
+                {totalFinalizadas}
+              </span>
+              <Badge variant="success" dot>
+                Completadas
+              </Badge>
+            </div>
+            <span className="text-on-surface-variant font-label-md text-[11px] mt-0.5 block">
+              Con asistencia registrada
+            </span>
+          </div>
+          <div className="w-12 h-12 rounded-xl bg-[#dcfce7] flex items-center justify-center text-[#16a34a] shrink-0">
+            <Icon className="text-[24px]">verified</Icon>
+          </div>
+        </SurfaceCard>
+
+        <SurfaceCard tone="lowest" className="p-space-md flex items-center justify-between">
+          <div>
+            <span className="font-label-md text-[11px] uppercase text-outline font-semibold tracking-wider block">
+              Sesiones Activas
+            </span>
+            <div className="flex items-baseline gap-2 mt-1">
+              <span className="font-headline-lg text-2xl font-bold text-on-surface">
+                {totalEnCurso}
+              </span>
+              <Badge variant="primary">En agenda</Badge>
+            </div>
+            <span className="text-on-surface-variant font-label-md text-[11px] mt-0.5 block">
+              Pendientes por concluir
+            </span>
+          </div>
+          <div className="w-12 h-12 rounded-xl bg-secondary-fixed flex items-center justify-center text-secondary shrink-0">
+            <Icon className="text-[24px]">event_available</Icon>
+          </div>
+        </SurfaceCard>
       </div>
 
       {/* Filtros HU-09 */}
-      <div className="bg-white p-4 rounded-xl shadow-sm border grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <input
-          type="text"
-          placeholder="Filtrar por materia..."
-          value={filtroMateria}
-          onChange={(e) => setFiltroMateria(e.target.value)}
-          className="rounded-lg border border-gray-300 px-3 py-2 text-xs text-gray-900"
-        />
-        <select
-          value={filtroModalidad}
-          onChange={(e) => setFiltroModalidad(e.target.value)}
-          className="rounded-lg border border-gray-300 px-3 py-2 text-xs text-gray-900 bg-white"
-        >
-          <option value="">Todas las modalidades</option>
-          <option value="virtual">Virtual</option>
-          <option value="presencial">Presencial</option>
-        </select>
-      </div>
+      <SurfaceCard tone="lowest" className="p-space-md space-y-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-md items-end">
+          <SearchInput
+            id="filtro-materia-prof"
+            label="Buscar por Materia, Tema o Estudiante"
+            placeholder="Ej: Cálculo, Estructuras de Datos..."
+            value={filtroMateria}
+            onChange={(e) => setFiltroMateria(e.target.value)}
+            onClear={() => setFiltroMateria('')}
+          />
+
+          <FormSelect
+            id="filtro-modalidad-prof"
+            label="Filtrar por Modalidad"
+            icon="filter_list"
+            value={filtroModalidad}
+            onChange={(e) => setFiltroModalidad(e.target.value)}
+          >
+            <option value="">Todas las modalidades</option>
+            <option value="virtual">Virtual</option>
+            <option value="presencial">Presencial</option>
+          </FormSelect>
+        </div>
+
+        {(filtroMateria || filtroModalidad) && (
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            <span className="font-label-md text-[11px] text-outline font-semibold uppercase tracking-wider">
+              Filtros activos:
+            </span>
+            {filtroMateria && (
+              <Badge variant="neutral" onRemove={() => setFiltroMateria('')}>
+                Búsqueda: {filtroMateria}
+              </Badge>
+            )}
+            {filtroModalidad && (
+              <Badge
+                variant="primary"
+                onRemove={() => setFiltroModalidad('')}
+                className="capitalize"
+              >
+                Modalidad: {filtroModalidad}
+              </Badge>
+            )}
+          </div>
+        )}
+      </SurfaceCard>
 
       {filtradas.length === 0 ? (
-        <div className="bg-white p-8 rounded-xl shadow-sm border text-center text-gray-500 text-sm">
-          No hay tutorías registradas con esos criterios.
-        </div>
+        <SurfaceCard tone="lowest" className="p-10 text-center space-y-2">
+          <Icon className="text-outline text-[36px]">history</Icon>
+          <p className="text-sm text-on-surface-variant">
+            No hay tutorías registradas con esos criterios.
+          </p>
+        </SurfaceCard>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-space-md">
           {filtradas.map((tutoria) => (
-            <div key={tutoria._id} className="bg-white p-6 rounded-xl shadow-sm border space-y-4">
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
-                <div>
+            <SurfaceCard
+              key={tutoria._id}
+              as="article"
+              tone="lowest"
+              interactive
+              className="p-space-lg space-y-4"
+            >
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+                <div className="space-y-1.5">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-lg font-bold text-gray-800">
-                      {tutoria.materia} {tutoria.tema ? `- ${tutoria.tema}` : ''}
+                    <h3 className="font-label-md text-base font-bold text-on-surface group-hover:text-primary transition-colors">
+                      {tutoria.materia} {tutoria.tema ? `• ${tutoria.tema}` : ''}
                     </h3>
-                    <span className="text-[11px] px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 capitalize">
-                      {tutoria.modalidad || 'Virtual'}
-                    </span>
-                    <span className="text-[11px] px-2 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-200 capitalize">
-                      {tutoria.tipo || 'Individual'}
-                    </span>
+                    <Badge variant="primary" pill={false} className="capitalize">
+                      <Icon className="text-[14px]">
+                        {tutoria.modalidad === 'presencial' ? 'location_on' : 'videocam'}
+                      </Icon>
+                      <span>{tutoria.modalidad || 'Virtual'}</span>
+                    </Badge>
+                    <Badge variant="secondary" pill={false} className="capitalize">
+                      <Icon className="text-[14px]">
+                        {tutoria.tipo === 'grupal' ? 'groups' : 'person'}
+                      </Icon>
+                      <span>{tutoria.tipo || 'Individual'}</span>
+                    </Badge>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Horario: <span className="font-medium text-gray-700">{tutoria.hora || 'N/A'}</span>
+
+                  <p className="text-xs text-on-surface-variant flex items-center gap-1.5">
+                    <Icon className="text-[15px] text-outline">schedule</Icon>
+                    <span>Horario:</span>
+                    <strong className="font-semibold text-on-surface">
+                      {tutoria.hora || 'N/A'}
+                    </strong>
                   </p>
-                  {tutoria.comentarioProfesor && (
-                    <p className="text-xs text-gray-700 mt-1">
-                      <span className="font-semibold">Comentario / Salón / Link:</span>{' '}
-                      {tutoria.comentarioProfesor}
-                    </p>
-                  )}
                 </div>
 
-                <span
-                  className={`px-3 py-1 text-xs rounded-full font-medium self-start ${
-                    tutoria.estado === 'finalizada'
-                      ? 'bg-emerald-100 text-emerald-800'
-                      : 'bg-blue-100 text-blue-800'
-                  }`}
+                <Badge
+                  variant={tutoria.estado === 'finalizada' ? 'success' : 'primary'}
+                  dot
+                  className="capitalize self-start"
                 >
                   {tutoria.estado}
-                </span>
+                </Badge>
               </div>
 
+              {tutoria.comentarioProfesor && (
+                <CalloutBanner
+                  tone="info"
+                  icon={tutoria.modalidad === 'presencial' ? 'location_on' : 'videocam'}
+                  title="Comentario / Salón / Enlace de Reunión"
+                >
+                  {tutoria.comentarioProfesor}
+                </CalloutBanner>
+              )}
+
               {/* Lista de Asistencia */}
-              <div className="bg-gray-50 p-3 rounded-lg border space-y-1.5">
-                <p className="text-xs font-bold text-gray-700">Registro de Asistencia:</p>
-                {tutoria.estudiante && (
-                  <div className="flex justify-between text-xs">
-                    <span>
-                      {tutoria.estudiante.nombre} ({tutoria.estudiante.email})
-                    </span>
-                    <span
-                      className={`font-semibold ${
-                        tutoria.asistenciaEstudiante === true
-                          ? 'text-emerald-600'
+              <div className="p-space-md rounded-xl bg-surface-container-low space-y-2.5">
+                <p className="font-label-md text-xs font-bold text-on-surface flex items-center gap-1.5">
+                  <Icon className="text-[16px] text-primary">fact_check</Icon>
+                  <span>Registro de Asistencia</span>
+                </p>
+
+                <div className="divide-y divide-surface-container-highest">
+                  {tutoria.estudiante && (
+                    <div className="py-2 flex items-center justify-between gap-2 text-xs">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-7 h-7 rounded-full bg-primary-fixed text-primary font-bold text-[11px] flex items-center justify-center shrink-0">
+                          {getInitials(tutoria.estudiante.nombre)}
+                        </div>
+                        <span className="truncate text-on-surface font-medium">
+                          {tutoria.estudiante.nombre}{' '}
+                          <span className="text-outline">({tutoria.estudiante.email})</span>
+                        </span>
+                      </div>
+
+                      <Badge
+                        variant={
+                          tutoria.asistenciaEstudiante === true
+                            ? 'success'
+                            : tutoria.asistenciaEstudiante === false
+                            ? 'error'
+                            : 'neutral'
+                        }
+                      >
+                        {tutoria.asistenciaEstudiante === true
+                          ? 'Asistió'
                           : tutoria.asistenciaEstudiante === false
-                          ? 'text-red-600'
-                          : 'text-gray-400'
-                      }`}
+                          ? 'No asistió'
+                          : 'Sin registrar'}
+                      </Badge>
+                    </div>
+                  )}
+
+                  {tutoria.participantes?.map((p) => (
+                    <div
+                      key={p.estudiante._id}
+                      className="py-2 flex items-center justify-between gap-2 text-xs"
                     >
-                      {tutoria.asistenciaEstudiante === true
-                        ? 'Asistió'
-                        : tutoria.asistenciaEstudiante === false
-                        ? 'No asistió'
-                        : 'Sin registrar'}
-                    </span>
-                  </div>
-                )}
-                {tutoria.participantes?.map((p) => (
-                  <div key={p.estudiante._id} className="flex justify-between text-xs">
-                    <span>
-                      {p.estudiante.nombre} ({p.estudiante.email})
-                    </span>
-                    <span
-                      className={`font-semibold ${
-                        p.asistio === true
-                          ? 'text-emerald-600'
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-7 h-7 rounded-full bg-secondary-fixed text-secondary font-bold text-[11px] flex items-center justify-center shrink-0">
+                          {getInitials(p.estudiante.nombre)}
+                        </div>
+                        <span className="truncate text-on-surface font-medium">
+                          {p.estudiante.nombre}{' '}
+                          <span className="text-outline">({p.estudiante.email})</span>
+                        </span>
+                      </div>
+
+                      <Badge
+                        variant={
+                          p.asistio === true
+                            ? 'success'
+                            : p.asistio === false
+                            ? 'error'
+                            : 'neutral'
+                        }
+                      >
+                        {p.asistio === true
+                          ? 'Asistió'
                           : p.asistio === false
-                          ? 'text-red-600'
-                          : 'text-gray-400'
-                      }`}
-                    >
-                      {p.asistio === true
-                        ? 'Asistió'
-                        : p.asistio === false
-                        ? 'No asistió'
-                        : 'Sin registrar'}
-                    </span>
-                  </div>
-                ))}
+                          ? 'No asistió'
+                          : 'Sin registrar'}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               {/* Grabación y Documentos */}
-              {(tutoria.enlaceGrabacion || (tutoria.recursos && tutoria.recursos.length > 0)) && (
-                <div className="border-t pt-3 space-y-1 text-xs">
+              {(tutoria.enlaceGrabacion ||
+                (tutoria.recursos && tutoria.recursos.length > 0)) && (
+                <div className="pt-2 space-y-2">
                   {tutoria.enlaceGrabacion && (
-                    <p>
-                      <span className="font-semibold text-gray-700">Grabación: </span>
+                    <CalloutBanner
+                      tone="success"
+                      icon="play_circle"
+                      title="Grabación de la Sesión"
+                    >
                       <a
                         href={tutoria.enlaceGrabacion}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-blue-600 underline"
+                        className="underline font-semibold text-[#166534] inline-flex items-center gap-1 break-all"
                       >
-                        {tutoria.enlaceGrabacion}
+                        <span>{tutoria.enlaceGrabacion}</span>
+                        <Icon className="text-[14px]">open_in_new</Icon>
                       </a>
-                    </p>
+                    </CalloutBanner>
                   )}
+
                   {tutoria.recursos && tutoria.recursos.length > 0 && (
-                    <div>
-                      <span className="font-semibold text-gray-700 block">
-                        Documentos publicados en Recursos:
+                    <div className="p-space-md rounded-xl bg-surface-container-low space-y-2">
+                      <span className="font-label-md text-xs font-bold text-on-surface flex items-center gap-1.5">
+                        <Icon className="text-[16px] text-primary">folder</Icon>
+                        <span>Documentos publicados en Recursos</span>
                       </span>
-                      {tutoria.recursos.map((r, i) => (
-                        <a
-                          key={i}
-                          href={r}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="block text-blue-600 underline truncate"
-                        >
-                          {r}
-                        </a>
-                      ))}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {tutoria.recursos.map((r, i) => (
+                          <a
+                            key={i}
+                            href={r}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="p-2.5 rounded-lg bg-surface-container-lowest hover:bg-primary-fixed/40 flex items-center justify-between gap-2 text-xs text-primary font-medium transition-colors"
+                          >
+                            <span className="truncate">{r}</span>
+                            <Icon className="text-[16px] shrink-0">open_in_new</Icon>
+                          </a>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
               )}
-            </div>
+            </SurfaceCard>
           ))}
         </div>
       )}

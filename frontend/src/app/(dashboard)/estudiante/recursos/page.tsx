@@ -2,6 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import api from '../../../../lib/api';
+import { Icon } from '../../../../components/ui/Icon';
+import { PageHeader } from '../../../../components/ui/PageHeader';
+import { SearchInput } from '../../../../components/ui/SearchInput';
+import { SurfaceCard } from '../../../../components/ui/SurfaceCard';
+import { Badge } from '../../../../components/ui/Badge';
 
 interface EscuelaItem {
   _id: string;
@@ -83,46 +88,54 @@ export default function RecursosEstudiantePage() {
   );
 
   if (cargando) {
-    return <div className="text-gray-500">Cargando recursos de estudio por escuela...</div>;
+    return (
+      <div className="max-w-6xl mx-auto py-8 text-sm text-on-surface-variant flex items-center gap-2">
+        <Icon className="text-primary animate-pulse">hourglass_top</Icon>
+        <span>Cargando recursos de estudio por escuela...</span>
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">Recursos de Estudio por Escuela</h1>
-          <p className="text-sm text-gray-500">
-            Material de apoyo y documentos compartidos organizados por escuela académica
-          </p>
-        </div>
-        <input
-          type="text"
-          placeholder="Buscar por materia, tema o clase..."
-          value={busqueda}
-          onChange={(e) => setBusqueda(e.target.value)}
-          className="rounded-lg border border-gray-300 px-3 py-2 text-xs text-gray-900 bg-white w-full sm:w-64 focus:outline-none focus:ring-1 focus:ring-blue-500"
-        />
-      </div>
+    <div className="space-y-space-lg max-w-6xl mx-auto">
+      <PageHeader
+        eyebrow="04. Biblioteca Digital"
+        title="Recursos de Estudio por Escuela"
+        description="Material de apoyo, guías y documentos compartidos por los docentes organizados por escuela académica."
+        actions={
+          <div className="w-full sm:w-80">
+            <SearchInput
+              placeholder="Buscar por materia, tema o título..."
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              onClear={() => setBusqueda('')}
+            />
+          </div>
+        }
+      />
 
-      {/* Pestañas de Escuelas */}
-      <div className="bg-white p-4 rounded-xl shadow-sm border space-y-2">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-bold text-gray-600">Seleccionar Escuela:</span>
+      {/* Selector de Escuela con Chips Canónicos (Sección 04) */}
+      <SurfaceCard tone="lowest" className="p-space-md space-y-space-sm">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span className="font-label-md text-[11px] font-semibold text-outline uppercase tracking-wider">
+            Filtrar por Escuela o Facultad
+          </span>
           {miEscuela && (
-            <span className="text-[11px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2.5 py-0.5 rounded-full">
-              Tu escuela: {miEscuela}
-            </span>
+            <Badge variant="primary">
+              <Icon className="text-[14px]">school</Icon>
+              <span>Tu escuela: {miEscuela}</span>
+            </Badge>
           )}
         </div>
 
-        <div className="flex flex-wrap gap-2 pt-1">
+        <div className="flex flex-wrap gap-2">
           <button
             type="button"
             onClick={() => seleccionarEscuela('todas')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+            className={`px-3.5 py-2 rounded-lg font-label-md text-[12px] font-semibold transition-all cursor-pointer active:scale-[0.98] ${
               escuelaSeleccionada === 'todas'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                ? 'bg-primary text-on-primary shadow-sm'
+                : 'bg-surface-container text-on-surface hover:bg-primary-fixed hover:text-primary'
             }`}
           >
             Todas las Escuelas
@@ -133,83 +146,113 @@ export default function RecursosEstudiantePage() {
               key={esc._id}
               type="button"
               onClick={() => seleccionarEscuela(esc.nombre)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+              className={`px-3.5 py-2 rounded-lg font-label-md text-[12px] font-semibold transition-all cursor-pointer active:scale-[0.98] ${
                 escuelaSeleccionada === esc.nombre
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-primary text-on-primary shadow-sm'
+                  : 'bg-surface-container text-on-surface hover:bg-primary-fixed hover:text-primary'
               }`}
             >
               {esc.nombre}
             </button>
           ))}
         </div>
-      </div>
+      </SurfaceCard>
 
-      <div className="bg-white p-6 rounded-xl shadow-sm border space-y-4">
-        <div className="flex justify-between items-center">
-          <h2 className="text-lg font-bold text-gray-800">
-            {escuelaSeleccionada === 'todas'
-              ? 'Biblioteca Digital • Todas las Escuelas'
-              : `Biblioteca Digital • ${escuelaSeleccionada}`}
+      {/* Listado de Recursos */}
+      <section className="space-y-space-md">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+          <h2 className="text-xl font-semibold text-on-surface flex items-center gap-2">
+            <Icon className="text-primary text-[22px]">library_books</Icon>
+            <span>
+              {escuelaSeleccionada === 'todas'
+                ? 'Repositorio General • Todas las Escuelas'
+                : `Repositorio • ${escuelaSeleccionada}`}
+            </span>
           </h2>
-          <span className="text-xs text-gray-500 font-medium">
+          <Badge variant="neutral">
             {filtrados.length} {filtrados.length === 1 ? 'documento' : 'documentos'}
-          </span>
+          </Badge>
         </div>
 
         {filtrados.length === 0 ? (
-          <p className="text-gray-500 text-sm">
-            No hay recursos disponibles para esta escuela con ese criterio.
-          </p>
+          <SurfaceCard tone="lowest" className="p-10 text-center space-y-2">
+            <Icon className="text-outline text-[36px]">folder_off</Icon>
+            <p className="text-sm text-on-surface-variant">
+              No hay recursos disponibles para esta escuela con ese criterio.
+            </p>
+          </SurfaceCard>
         ) : (
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-space-md">
             {filtrados.map((r) => (
-              <div
+              <SurfaceCard
                 key={r._id}
-                className="p-4 bg-gray-50 rounded-lg border flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3"
+                as="article"
+                tone="lowest"
+                interactive
+                className="overflow-hidden flex flex-col justify-between"
               >
-                <div className="space-y-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-[11px] bg-indigo-100 text-indigo-800 px-2.5 py-0.5 rounded-md font-semibold">
-                      {r.escuela || 'General'}
+                <div className="p-space-md space-y-2.5">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <Badge variant="primary" pill={false}>
+                        {r.escuela || 'General'}
+                      </Badge>
+                      {r.claseOrigen && (
+                        <Badge variant="success" dot>
+                          {r.claseOrigen}
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="w-9 h-9 rounded-lg bg-surface-container-low flex items-center justify-center text-primary shrink-0">
+                      <Icon className="text-[20px]">folder</Icon>
+                    </div>
+                  </div>
+
+                  <h3 className="font-label-md text-[15px] font-bold text-on-surface group-hover:text-primary transition-colors">
+                    {r.titulo}
+                  </h3>
+
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-on-surface-variant">
+                    <span className="inline-flex items-center gap-1 font-medium text-primary">
+                      <Icon className="text-[15px]">menu_book</Icon>
+                      <span>
+                        {r.materia} {r.tema ? `• ${r.tema}` : ''}
+                      </span>
                     </span>
-                    {r.claseOrigen && (
-                      <span className="text-[11px] bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full font-semibold">
-                        {r.claseOrigen}
+                    {r.profesor?.nombre && (
+                      <span className="inline-flex items-center gap-1">
+                        <Icon className="text-[15px] text-outline">person</Icon>
+                        <span>Por {r.profesor.nombre}</span>
                       </span>
                     )}
                   </div>
+                </div>
 
-                  <h4 className="font-bold text-gray-800">{r.titulo}</h4>
-
-                  <p className="text-xs text-blue-600 font-semibold">
-                    {r.materia} {r.tema ? `• ${r.tema}` : ''}{' '}
-                    {r.profesor ? `• Por ${r.profesor.nombre}` : ''}
-                  </p>
+                <div className="px-space-md py-3 bg-surface-container-low flex items-center justify-between gap-3">
+                  <a
+                    href={r.link}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-xs text-outline hover:text-primary truncate font-mono"
+                  >
+                    {r.link}
+                  </a>
 
                   <a
                     href={r.link}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-xs text-gray-500 underline truncate block max-w-md"
+                    className="inline-flex items-center justify-center gap-1.5 bg-primary hover:bg-primary-container text-on-primary font-label-md text-xs px-3.5 py-2 rounded-lg font-semibold shadow-sm active:scale-[0.98] transition-all shrink-0"
                   >
-                    {r.link}
+                    <Icon className="text-[16px]">download</Icon>
+                    <span>Abrir Recurso</span>
                   </a>
                 </div>
-
-                <a
-                  href={r.link}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-4 py-2 rounded-lg font-medium transition self-start sm:self-center shrink-0"
-                >
-                  Abrir Documento
-                </a>
-              </div>
+              </SurfaceCard>
             ))}
           </div>
         )}
-      </div>
+      </section>
     </div>
   );
 }
