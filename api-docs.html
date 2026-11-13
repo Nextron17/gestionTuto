@@ -1,0 +1,1981 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Documentación API REST — Tutorías Pro v2.4</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "surface-container-lowest": "#ffffff",
+            "secondary-fixed-dim": "#aec7f7",
+            "primary": "#005cb8",
+            "outline-variant": "#c1c6d5",
+            "on-primary": "#ffffff",
+            "secondary": "#465f88",
+            "secondary-container": "#b6d0ff",
+            "background": "#f9f9ff",
+            "on-tertiary-fixed": "#321200",
+            "on-secondary-fixed": "#001b3d",
+            "on-primary-fixed": "#001b3e",
+            "error": "#ba1a1a",
+            "surface-bright": "#f9f9ff",
+            "on-error-container": "#93000a",
+            "tertiary-fixed-dim": "#ffb68c",
+            "on-error": "#ffffff",
+            "inverse-on-surface": "#eef0fa",
+            "on-primary-fixed-variant": "#00458d",
+            "surface-container-low": "#f1f3fc",
+            "surface-variant": "#e0e2eb",
+            "surface-container-high": "#e6e8f1",
+            "surface-container-highest": "#e0e2eb",
+            "surface": "#f9f9ff",
+            "tertiary-container": "#c05900",
+            "on-background": "#181c22",
+            "outline": "#717785",
+            "on-surface-variant": "#414753",
+            "surface-dim": "#d7dae3",
+            "on-secondary": "#ffffff",
+            "primary-fixed-dim": "#aac7ff",
+            "tertiary": "#9a4600",
+            "inverse-primary": "#aac7ff",
+            "primary-container": "#1275e2",
+            "on-tertiary": "#ffffff",
+            "primary-fixed": "#d6e3ff",
+            "on-tertiary-fixed-variant": "#763400",
+            "on-tertiary-container": "#0d0300",
+            "on-secondary-fixed-variant": "#2d476f",
+            "secondary-fixed": "#d6e3ff",
+            "surface-tint": "#005db8",
+            "on-secondary-container": "#3f5881",
+            "surface-container": "#ebedf7",
+            "on-surface": "#181c22",
+            "on-primary-container": "#000512",
+            "error-container": "#ffdad6",
+            "tertiary-fixed": "#ffdbc9",
+            "inverse-surface": "#2d3037"
+          },
+          borderRadius: {
+            DEFAULT: "0.25rem",
+            lg: "0.5rem",
+            xl: "0.75rem",
+            full: "9999px"
+          },
+          spacing: {
+            "space-xs": "0.25rem",
+            "space-sm": "0.5rem",
+            "space-md": "1rem",
+            "space-lg": "1.5rem",
+            "space-xl": "2rem"
+          },
+          fontFamily: {
+            "headline-lg": ["Inter", "sans-serif"],
+            "body-md": ["Inter", "sans-serif"],
+            "label-md": ["Inter", "sans-serif"],
+            "mono": ["JetBrains Mono", "monospace"]
+          },
+          fontSize: {
+            "headline-lg": ["28px", { lineHeight: "36px", fontWeight: "700" }],
+            "body-md": ["15px", { lineHeight: "24px", fontWeight: "400" }],
+            "label-md": ["13px", { lineHeight: "18px", fontWeight: "500" }]
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 20px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+      user-select: none;
+    }
+    pre::-webkit-scrollbar {
+      height: 6px;
+      width: 6px;
+    }
+    pre::-webkit-scrollbar-thumb {
+      background: #414753;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="bg-surface font-body-md text-body-md text-on-surface antialiased">
+
+  <!-- Backdrop Mobile Sidebar -->
+  <div id="sidebar-backdrop" onclick="toggleMobileSidebar()" class="fixed inset-0 bg-inverse-surface/40 backdrop-blur-xs z-40 hidden lg:hidden"></div>
+
+  <!-- Sidebar Fija (Estilo Tutorías Pro v2.4) -->
+  <aside id="sidebar" class="fixed left-0 top-0 h-full w-64 bg-surface-container-low z-50 flex flex-col pt-space-lg pb-space-lg shadow-[0_1px_8px_rgba(0,0,0,0.04)] transition-transform duration-200 ease-out -translate-x-full lg:translate-x-0">
+    <div class="px-space-md mb-space-lg flex items-center justify-between gap-space-sm">
+      <div class="flex items-center gap-space-sm">
+        <div class="w-9 h-9 rounded-lg bg-primary flex items-center justify-center shadow-xs">
+          <span class="material-symbols-outlined text-on-primary text-[20px]">api</span>
+        </div>
+        <div>
+          <span class="block font-label-md text-[14px] font-bold text-on-surface leading-none">Tutorías Pro</span>
+          <span class="block font-label-md text-[11px] text-primary font-semibold leading-tight mt-1">API Reference v2.4</span>
+        </div>
+      </div>
+      <button onclick="toggleMobileSidebar()" class="lg:hidden w-8 h-8 rounded-lg hover:bg-surface-container flex items-center justify-center text-on-surface-variant">
+        <span class="material-symbols-outlined text-[20px]">close</span>
+      </button>
+    </div>
+
+    <div class="px-space-md mb-2">
+      <span class="font-label-md text-[11px] font-semibold text-outline uppercase tracking-wider">Fundamentos</span>
+    </div>
+    <nav class="px-space-xs space-y-1 mb-space-md">
+      <a href="#resumen" onclick="closeSidebarOnMobile()" class="nav-link flex items-center px-space-md py-2 rounded-lg text-label-md bg-primary-container text-on-primary font-semibold transition-all">
+        <span class="material-symbols-outlined mr-space-sm text-[19px]">overview</span>
+        Resumen &amp; Auth JWT
+      </a>
+      <a href="#indice-endpoints" onclick="closeSidebarOnMobile()" class="nav-link flex items-center px-space-md py-2 rounded-lg text-label-md text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all">
+        <span class="material-symbols-outlined mr-space-sm text-[19px]">table_chart</span>
+        Tabla General (31)
+      </a>
+      <a href="#modelos-datos" onclick="closeSidebarOnMobile()" class="nav-link flex items-center px-space-md py-2 rounded-lg text-label-md text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all">
+        <span class="material-symbols-outlined mr-space-sm text-[19px]">database</span>
+        Modelos Mongoose (8)
+      </a>
+    </nav>
+
+    <div class="px-space-md mb-2">
+      <span class="font-label-md text-[11px] font-semibold text-outline uppercase tracking-wider">Módulos de Endpoints</span>
+    </div>
+    <nav class="flex-1 px-space-xs space-y-1 overflow-y-auto">
+      <a href="#mod-auth" onclick="closeSidebarOnMobile()" class="nav-link flex items-center justify-between px-space-md py-2 rounded-lg text-label-md text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all">
+        <span class="flex items-center">
+          <span class="material-symbols-outlined mr-space-sm text-[19px] text-primary">lock_open</span>
+          01. Auth &amp; Públicos
+        </span>
+        <span class="text-[11px] font-mono px-1.5 py-0.5 rounded bg-surface-container text-outline">4</span>
+      </a>
+      <a href="#mod-tutorias" onclick="closeSidebarOnMobile()" class="nav-link flex items-center justify-between px-space-md py-2 rounded-lg text-label-md text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all">
+        <span class="flex items-center">
+          <span class="material-symbols-outlined mr-space-sm text-[19px] text-[#16a34a]">school</span>
+          02. Tutorías &amp; Aula
+        </span>
+        <span class="text-[11px] font-mono px-1.5 py-0.5 rounded bg-surface-container text-outline">8</span>
+      </a>
+      <a href="#mod-horarios" onclick="closeSidebarOnMobile()" class="nav-link flex items-center justify-between px-space-md py-2 rounded-lg text-label-md text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all">
+        <span class="flex items-center">
+          <span class="material-symbols-outlined mr-space-sm text-[19px] text-secondary">calendar_month</span>
+          03. Horarios
+        </span>
+        <span class="text-[11px] font-mono px-1.5 py-0.5 rounded bg-surface-container text-outline">3</span>
+      </a>
+      <a href="#mod-recursos" onclick="closeSidebarOnMobile()" class="nav-link flex items-center justify-between px-space-md py-2 rounded-lg text-label-md text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all">
+        <span class="flex items-center">
+          <span class="material-symbols-outlined mr-space-sm text-[19px] text-tertiary">library_books</span>
+          04. Recursos
+        </span>
+        <span class="text-[11px] font-mono px-1.5 py-0.5 rounded bg-surface-container text-outline">3</span>
+      </a>
+      <a href="#mod-admin" onclick="closeSidebarOnMobile()" class="nav-link flex items-center justify-between px-space-md py-2 rounded-lg text-label-md text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all">
+        <span class="flex items-center">
+          <span class="material-symbols-outlined mr-space-sm text-[19px] text-error">admin_panel_settings</span>
+          05. Administración
+        </span>
+        <span class="text-[11px] font-mono px-1.5 py-0.5 rounded bg-surface-container text-outline">13</span>
+      </a>
+    </nav>
+
+    <div class="px-space-md pt-space-md space-y-2">
+      <div class="p-2.5 rounded-lg bg-surface-container text-on-surface-variant font-label-md text-[12px] flex items-center justify-between">
+        <span class="flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-[#16a34a] animate-pulse"></span>
+          Base URL
+        </span>
+        <button onclick="copiarTexto('http://localhost:5000/api')" class="font-mono text-[11px] text-primary hover:underline cursor-pointer" title="Copiar Base URL">
+          :5000/api
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Contenedor Principal -->
+  <div class="pl-0 lg:pl-64 min-h-screen flex flex-col">
+    <!-- Topbar Fija -->
+    <header class="fixed top-0 left-0 lg:left-64 right-0 h-16 bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-30 flex items-center justify-between px-4 sm:px-space-lg gap-3">
+      <div class="flex items-center gap-3 min-w-0">
+        <button onclick="toggleMobileSidebar()" class="lg:hidden w-9 h-9 rounded-lg bg-surface-container hover:bg-surface-container-high flex items-center justify-center text-on-surface shrink-0">
+          <span class="material-symbols-outlined text-[20px]">menu</span>
+        </button>
+        <span class="font-label-md text-sm font-semibold text-on-surface truncate">
+          Especificación Técnica de Endpoints &amp; Esquemas — Backend Express + MongoDB
+        </span>
+        <span class="hidden sm:inline-flex items-center gap-1 bg-primary-fixed text-on-primary-fixed rounded-full px-2.5 py-0.5 font-label-md text-[11px] font-semibold shrink-0">
+          <span class="material-symbols-outlined text-[14px]">verified</span>
+          31 Endpoints
+        </span>
+      </div>
+
+      <div class="flex items-center gap-2 shrink-0">
+        <button onclick="toggleAllDetails(true)" class="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-highest text-on-surface-variant font-label-md text-[12px] font-semibold transition-all cursor-pointer">
+          <span class="material-symbols-outlined text-[16px]">unfold_more</span>
+          Expandir JSONs
+        </button>
+        <button onclick="toggleAllDetails(false)" class="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-highest text-on-surface-variant font-label-md text-[12px] font-semibold transition-all cursor-pointer">
+          <span class="material-symbols-outlined text-[16px]">unfold_less</span>
+          Colapsar JSONs
+        </button>
+        <button onclick="exportarEspecificacionJSON()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-md text-[12px] font-semibold shadow-xs transition-all active:scale-95 cursor-pointer">
+          <span class="material-symbols-outlined text-[16px]">download</span>
+          <span class="hidden sm:inline">Exportar API JSON</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Contenido -->
+    <main class="relative pt-20 pb-16 px-4 sm:px-space-xl max-w-7xl w-full mx-auto space-y-space-xl">
+
+      <!-- HERO / RESUMEN GENERAL -->
+      <section id="resumen" class="relative w-full rounded-xl bg-surface-container-lowest p-5 sm:p-space-xl shadow-xs overflow-hidden">
+        <div class="absolute -right-16 -top-16 w-80 h-80 rounded-full bg-primary/5 blur-3xl pointer-events-none"></div>
+        <div class="absolute -left-10 -bottom-10 w-64 h-64 rounded-full bg-secondary-container/20 blur-2xl pointer-events-none"></div>
+
+        <div class="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-space-lg">
+          <div class="max-w-3xl space-y-2.5">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-fixed text-on-primary-fixed font-label-md text-[12px] font-semibold">
+                <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                REST API • Express + TypeScript
+              </span>
+              <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#dcfce7] text-[#166534] font-label-md text-[12px] font-semibold">
+                <span class="material-symbols-outlined text-[14px]">database</span>
+                MongoDB / Mongoose
+              </span>
+              <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#fef3c7] text-[#92400e] font-label-md text-[12px] font-semibold">
+                <span class="material-symbols-outlined text-[14px]">key</span>
+                JWT Bearer Auth (1d)
+              </span>
+            </div>
+
+            <h1 class="text-2xl sm:text-headline-lg font-bold text-on-surface tracking-tight">
+              Documentación Técnica de la API — Gestión de Tutorías
+            </h1>
+            <p class="text-sm sm:text-body-md text-on-surface-variant leading-relaxed">
+              Referencia interactiva completa de los <strong>31 endpoints</strong> del backend, contratos de entrada (<code>Body</code>, <code>Query</code>, <code>Params</code>), tipos de datos, validaciones por rol (<code>estudiante</code>, <code>profesor</code>, <code>admin</code>) y esquemas de respuesta JSON.
+            </p>
+          </div>
+
+          <!-- Tarjeta de Conexión Rápida -->
+          <div class="bg-surface-container-low p-4 rounded-xl min-w-[280px] space-y-2.5 shrink-0">
+            <div class="flex items-center justify-between">
+              <span class="font-label-md text-[11px] uppercase tracking-wider text-outline font-bold">Configuración Base</span>
+              <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-primary-fixed text-primary font-semibold">JSON</span>
+            </div>
+            <div class="space-y-1.5 text-xs">
+              <div class="flex items-center justify-between gap-2 p-2 rounded-lg bg-surface-container-lowest">
+                <span class="text-outline">Base URL:</span>
+                <code class="font-mono font-semibold text-primary cursor-pointer hover:underline" onclick="copiarTexto('http://localhost:5000/api')">http://localhost:5000/api</code>
+              </div>
+              <div class="flex items-center justify-between gap-2 p-2 rounded-lg bg-surface-container-lowest">
+                <span class="text-outline">Header Auth:</span>
+                <code class="font-mono text-[11px] text-on-surface cursor-pointer hover:text-primary" onclick="copiarTexto('Authorization: Bearer <TOKEN>')">Authorization: Bearer &lt;JWT&gt;</code>
+              </div>
+              <div class="flex items-center justify-between gap-2 p-2 rounded-lg bg-surface-container-lowest">
+                <span class="text-outline">Token Payload:</span>
+                <code class="font-mono text-[11px] text-on-surface-variant">{ id: string, rol: string }</code>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPIs de la API -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mt-space-lg pt-space-md border-t border-surface-container">
+          <div class="p-3.5 rounded-xl bg-surface-container-low flex items-center justify-between">
+            <div>
+              <span class="text-[11px] font-label-md uppercase text-outline font-semibold block">Total Endpoints</span>
+              <span class="text-xl font-bold text-on-surface">31</span>
+            </div>
+            <div class="w-9 h-9 rounded-lg bg-primary-fixed text-primary flex items-center justify-center">
+              <span class="material-symbols-outlined text-[20px]">route</span>
+            </div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-surface-container-low flex items-center justify-between">
+            <div>
+              <span class="text-[11px] font-label-md uppercase text-outline font-semibold block">Públicos</span>
+              <span class="text-xl font-bold text-[#16a34a]">3</span>
+            </div>
+            <div class="w-9 h-9 rounded-lg bg-[#dcfce7] text-[#16a34a] flex items-center justify-center">
+              <span class="material-symbols-outlined text-[20px]">public</span>
+            </div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-surface-container-low flex items-center justify-between">
+            <div>
+              <span class="text-[11px] font-label-md uppercase text-outline font-semibold block">Protegidos JWT</span>
+              <span class="text-xl font-bold text-primary">15</span>
+            </div>
+            <div class="w-9 h-9 rounded-lg bg-primary-fixed text-primary flex items-center justify-center">
+              <span class="material-symbols-outlined text-[20px]">shield_lock</span>
+            </div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-surface-container-low flex items-center justify-between">
+            <div>
+              <span class="text-[11px] font-label-md uppercase text-outline font-semibold block">Exclusivos Admin</span>
+              <span class="text-xl font-bold text-error">13</span>
+            </div>
+            <div class="w-9 h-9 rounded-lg bg-error-container text-error flex items-center justify-center">
+              <span class="material-symbols-outlined text-[20px]">admin_panel_settings</span>
+            </div>
+          </div>
+          <div class="p-3.5 rounded-xl bg-surface-container-low flex items-center justify-between col-span-2 sm:col-span-1">
+            <div>
+              <span class="text-[11px] font-label-md uppercase text-outline font-semibold block">Modelos BD</span>
+              <span class="text-xl font-bold text-secondary">8</span>
+            </div>
+            <div class="w-9 h-9 rounded-lg bg-secondary-fixed text-secondary flex items-center justify-center">
+              <span class="material-symbols-outlined text-[20px]">schema</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- BARRA DE BÚSQUEDA Y FILTROS INTERACTIVOS -->
+      <section class="bg-surface-container-lowest p-4 sm:p-space-md rounded-xl shadow-xs sticky top-16 z-20 space-y-3 border border-surface-container">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <!-- Search Input Canónico -->
+          <div class="relative flex-1 flex items-center">
+            <span class="material-symbols-outlined absolute left-3.5 text-outline text-[20px] pointer-events-none">search</span>
+            <input
+              id="search-input"
+              type="text"
+              oninput="filtrarEndpoints()"
+              placeholder="Buscar endpoint por ruta (/api/tutorias), método (POST), campo JSON (cupoMaximo, carrera)..."
+              class="w-full pl-10 pr-20 py-2.5 bg-surface-container rounded-lg font-body-md text-sm text-on-surface placeholder:text-outline focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary transition-all"
+            />
+            <button id="clear-search-btn" onclick="limpiarBusqueda()" class="hidden absolute right-3 text-outline hover:text-on-surface cursor-pointer">
+              <span class="material-symbols-outlined text-[18px]">close</span>
+            </button>
+          </div>
+
+          <!-- Filtro por Método HTTP -->
+          <div class="flex flex-wrap items-center gap-1.5">
+            <button onclick="setFiltroMetodo('ALL')" data-metodo="ALL" class="metodo-chip px-3 py-1.5 rounded-lg font-label-md text-xs font-semibold bg-primary text-on-primary shadow-xs transition-all cursor-pointer">
+              Todos (31)
+            </button>
+            <button onclick="setFiltroMetodo('GET')" data-metodo="GET" class="metodo-chip px-3 py-1.5 rounded-lg font-mono text-xs font-semibold bg-surface-container text-on-surface-variant hover:bg-primary-fixed hover:text-primary transition-all cursor-pointer">
+              GET (10)
+            </button>
+            <button onclick="setFiltroMetodo('POST')" data-metodo="POST" class="metodo-chip px-3 py-1.5 rounded-lg font-mono text-xs font-semibold bg-surface-container text-on-surface-variant hover:bg-[#dcfce7] hover:text-[#166534] transition-all cursor-pointer">
+              POST (10)
+            </button>
+            <button onclick="setFiltroMetodo('PUT')" data-metodo="PUT" class="metodo-chip px-3 py-1.5 rounded-lg font-mono text-xs font-semibold bg-surface-container text-on-surface-variant hover:bg-[#fef3c7] hover:text-[#92400e] transition-all cursor-pointer">
+              PUT (1)
+            </button>
+            <button onclick="setFiltroMetodo('PATCH')" data-metodo="PATCH" class="metodo-chip px-3 py-1.5 rounded-lg font-mono text-xs font-semibold bg-surface-container text-on-surface-variant hover:bg-[#fef3c7] hover:text-[#92400e] transition-all cursor-pointer">
+              PATCH (4)
+            </button>
+            <button onclick="setFiltroMetodo('DELETE')" data-metodo="DELETE" class="metodo-chip px-3 py-1.5 rounded-lg font-mono text-xs font-semibold bg-surface-container text-on-surface-variant hover:bg-error-container hover:text-error transition-all cursor-pointer">
+              DELETE (6)
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- TABLA RESUMEN DE LOS 31 ENDPOINTS -->
+      <section id="indice-endpoints" class="space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+          <div>
+            <span class="font-label-md text-[11px] uppercase tracking-wider text-outline font-semibold">Vista Rápida</span>
+            <h2 class="text-xl sm:text-2xl font-bold text-on-surface">Índice Maestro de Endpoints (31)</h2>
+          </div>
+          <span class="text-xs text-outline">Haz clic en cualquier fila para saltar a su especificación JSON completa</span>
+        </div>
+
+        <div class="bg-surface-container-lowest rounded-xl shadow-xs overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-surface-container-low text-outline font-label-md text-[11px] uppercase tracking-wider">
+                  <th class="py-3 px-4 font-semibold">Método</th>
+                  <th class="py-3 px-4 font-semibold">Endpoint (Ruta)</th>
+                  <th class="py-3 px-4 font-semibold">Módulo</th>
+                  <th class="py-3 px-4 font-semibold">Autenticación / Rol</th>
+                  <th class="py-3 px-4 font-semibold">Descripción Resumida</th>
+                </tr>
+              </thead>
+              <tbody id="master-table-body" class="divide-y divide-surface-container text-xs">
+                <!-- Generado dinámicamente por JS desde el catálogo de endpoints -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- CONTENEDOR DINÁMICO DE MÓDULOS Y TARJETAS DE ENDPOINTS -->
+      <div id="endpoints-modules-container" class="space-y-space-xl">
+        <!-- Renderizado por JS con tablas de parámetros, JSON de entrada, JSON de salida y códigos HTTP -->
+      </div>
+
+      <!-- SECCIÓN DE MODELOS DE BASE DE DATOS (MONGOOSE SCHEMAS) -->
+      <section id="modelos-datos" class="space-y-space-md pt-4">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+          <div>
+            <span class="font-label-md text-[11px] uppercase tracking-wider text-outline font-semibold">Capa de Persistencia (MongoDB)</span>
+            <h2 class="text-xl sm:text-2xl font-bold text-on-surface">Esquemas y Modelos de Datos (Mongoose)</h2>
+            <p class="text-xs sm:text-sm text-on-surface-variant mt-0.5">
+              Estructura exacta de las 8 colecciones definidas en <code>backend/src/models/</code>. Todas incluyen <code>timestamps: true</code> (<code>createdAt</code>, <code>updatedAt</code>).
+            </p>
+          </div>
+        </div>
+
+        <div id="models-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-space-md">
+          <!-- Renderizado por JS -->
+        </div>
+      </section>
+
+      <!-- NOTAS Y HALLAZGOS TÉCNICOS -->
+      <section class="bg-surface-container-lowest p-5 sm:p-space-lg rounded-xl shadow-xs space-y-3 border-l-4 border-primary">
+        <div class="flex items-center gap-2 text-primary font-label-md font-bold text-sm">
+          <span class="material-symbols-outlined text-[20px]">lightbulb</span>
+          <span>Notas Técnicas del Backend Actual (Para Futura Organización)</span>
+        </div>
+        <ul class="list-disc pl-5 space-y-1.5 text-xs sm:text-sm text-on-surface-variant">
+          <li><strong>Respuestas de Error del Middleware JWT (<code>verificarToken</code>)</strong>: Devuelve <code>401 Unauthorized</code> con <code>{ "message": "Acceso denegado. Token no proporcionado." }</code> o <code>{ "message": "Token inválido o expirado." }</code>.</li>
+          <li><strong>Respuestas de Error del Middleware de Rol (<code>permitirRoles</code>)</strong>: Devuelve <code>403 Forbidden</code> con <code>{ "message": "No tienes permisos para realizar esta acción." }</code>.</li>
+          <li><strong>Publicación Automática de Recursos</strong>: Al ejecutar <code>PATCH /api/tutorias/:id/finalizar</code>, todos los enlaces guardados en <code>tutoria.recursos</code> y <code>tutoria.enlaceGrabacion</code> se insertan automáticamente en la colección <code>Recurso</code> bajo la escuela del profesor con la etiqueta <code>Clase: &lt;materia&gt; - &lt;tema&gt;</code>.</li>
+          <li><strong>Modelo <code>Tema.ts</code></strong>: Existe el esquema Mongoose <code>Tema</code> (<code>{ nombre, materia }</code>), aunque actualmente los temas se almacenan como texto libre (<code>tema?: string</code>) en <code>SolicitudTutoria</code> y <code>Recurso</code>.</li>
+        </ul>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Toast Flotante de Copiado -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 hidden items-center gap-2 px-4 py-2.5 rounded-xl bg-inverse-surface text-inverse-on-surface font-label-md text-xs shadow-lg">
+    <span class="material-symbols-outlined text-[16px] text-[#4ade80]">check_circle</span>
+    <span id="toast-text">Copiado al portapapeles</span>
+  </div>
+
+  <script>
+    // ============================================================================
+    // ESPECIFICACIÓN COMPLETA DE LA API (31 ENDPOINTS + 8 MODELOS)
+    // ============================================================================
+    const API_MODULES = [
+      {
+        id: "mod-auth",
+        code: "01. Autenticación & Consultas Públicas",
+        title: "Módulo de Autenticación (/api/auth)",
+        subtitle: "Registro de estudiantes, inicio de sesión con emisión de JWT (expira en 1 día), listado público de carreras y directorio de profesores.",
+        fileRef: "src/routes/auth.routes.ts • src/controllers/auth.controller.ts",
+        icon: "lock_open",
+        endpoints: [
+          {
+            id: "auth-registro",
+            method: "POST",
+            path: "/api/auth/registro",
+            summary: "Registrar nuevo estudiante",
+            description: "Crea una cuenta de usuario en la plataforma. Por seguridad, el backend asigna siempre el rol 'estudiante' de forma automática.",
+            auth: "Público",
+            roles: ["Público"],
+            params: [],
+            bodyFields: [
+              { name: "nombre", type: "string", required: true, desc: "Nombre completo del estudiante" },
+              { name: "email", type: "string", required: true, desc: "Correo electrónico institucional (único)" },
+              { name: "password", type: "string", required: true, desc: "Contraseña en texto plano (se encripta con bcrypt salt 10)" },
+              { name: "carrera", type: "string", required: true, desc: "Nombre de la carrera universitaria" },
+              { name: "semestre", type: "number | string", required: true, desc: "Semestre actual (se convierte con Number(semestre))" }
+            ],
+            requestExample: {
+              nombre: "Laura Gómez",
+              email: "laura.gomez@universidad.edu",
+              password: "MiPassword123",
+              carrera: "Ingeniería de Software y computación",
+              semestre: 5
+            },
+            responseStatus: "201 Created",
+            responseExample: {
+              message: "Estudiante registrado exitosamente"
+            },
+            errors: [
+              { code: 400, msg: '{ "message": "Todos los campos son obligatorios" }' },
+              { code: 400, msg: '{ "message": "El correo ya está registrado" }' },
+              { code: 500, msg: '{ "message": "Error en el servidor al registrar usuario" }' }
+            ]
+          },
+          {
+            id: "auth-login",
+            method: "POST",
+            path: "/api/auth/login",
+            summary: "Iniciar sesión y obtener token JWT",
+            description: "Valida las credenciales del usuario con bcrypt y firma un token JWT con vigencia de 24 horas ('1d') que contiene { id, rol }.",
+            auth: "Público",
+            roles: ["Público"],
+            params: [],
+            bodyFields: [
+              { name: "email", type: "string", required: true, desc: "Correo electrónico registrado" },
+              { name: "password", type: "string", required: true, desc: "Contraseña de la cuenta" }
+            ],
+            requestExample: {
+              email: "laura.gomez@universidad.edu",
+              password: "MiPassword123"
+            },
+            responseStatus: "200 OK",
+            responseExample: {
+              token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+              usuario: {
+                id: "65f1a2b3c4d5e6f7a8b9c0d1",
+                nombre: "Laura Gómez",
+                email: "laura.gomez@universidad.edu",
+                rol: "estudiante",
+                carrera: "Ingeniería de Software y computación",
+                escuela: null
+              }
+            },
+            errors: [
+              { code: 400, msg: '{ "message": "Credenciales inválidas" }' },
+              { code: 500, msg: '{ "message": "Error en el servidor" }' }
+            ]
+          },
+          {
+            id: "auth-carreras",
+            method: "GET",
+            path: "/api/auth/carreras",
+            summary: "Obtener catálogo público de carreras",
+            description: "Devuelve una lista sin duplicados que combina las 13 carreras institucionales predefinidas con las carreras creadas dinámicamente en la colección Carrera.",
+            auth: "Público",
+            roles: ["Público"],
+            params: [],
+            bodyFields: [],
+            requestExample: null,
+            responseStatus: "200 OK",
+            responseExample: [
+              { id: "carr-0", nombre: "Gobierno y Relaciones Internacionales" },
+              { id: "carr-1", nombre: "Derecho" },
+              { id: "carr-12", nombre: "Ingeniería de Software y computación" }
+            ],
+            errors: [
+              { code: 500, msg: '{ "message": "Error al obtener carreras" }' }
+            ]
+          },
+          {
+            id: "auth-profesores",
+            method: "GET",
+            path: "/api/auth/profesores",
+            summary: "Listar profesores disponibles",
+            description: "Si quien consulta tiene rol 'estudiante', filtra automáticamente los profesores que pertenecen a la misma carrera del estudiante. Otros roles pueden filtrar mediante query param.",
+            auth: "Bearer JWT",
+            roles: ["estudiante", "profesor", "admin"],
+            params: [
+              { name: "carrera", in: "query", type: "string", required: false, desc: "Filtra por carrera (aplicado cuando el usuario no es estudiante)" }
+            ],
+            bodyFields: [],
+            requestExample: null,
+            responseStatus: "200 OK",
+            responseExample: [
+              {
+                _id: "65f1a2b3c4d5e6f7a8b9c099",
+                nombre: "Dr. Carlos Ruiz",
+                email: "carlos.ruiz@universidad.edu",
+                escuela: "Escuela de Ingeniería",
+                carrera: "Ingeniería de Software y computación",
+                materias: ["Cálculo Multivariable", "Estructuras de Datos"]
+              }
+            ],
+            errors: [
+              { code: 401, msg: '{ "message": "Acceso denegado. Token no proporcionado." }' },
+              { code: 500, msg: '{ "message": "Error al obtener la lista de profesores" }' }
+            ]
+          }
+        ]
+      },
+      {
+        id: "mod-tutorias",
+        code: "02. Solicitudes, Sesiones Grupales y Asistencia",
+        title: "Módulo de Tutorías (/api/tutorias)",
+        subtitle: "Flujo completo de tutorías: creación de solicitud, aceptación/configuración de modalidad y cupo, inscripción grupal, control de asistencia y cierre con publicación automática de recursos.",
+        fileRef: "src/routes/tutorias.routes.ts • src/controllers/tutorias.controller.ts",
+        icon: "school",
+        endpoints: [
+          {
+            id: "tut-listar",
+            method: "GET",
+            path: "/api/tutorias",
+            summary: "Obtener tutorías según el rol del usuario",
+            description: "Estudiante: recibe tutorías donde es solicitante principal o participante grupal. Profesor: recibe tutorías asignadas a él. Admin: recibe todas las tutorías. Ordenadas por createdAt descendente.",
+            auth: "Bearer JWT",
+            roles: ["estudiante", "profesor", "admin"],
+            params: [],
+            bodyFields: [],
+            requestExample: null,
+            responseStatus: "200 OK",
+            responseExample: [
+              {
+                _id: "65f200112233445566778899",
+                estudiante: {
+                  _id: "65f1a2b3c4d5e6f7a8b9c0d1",
+                  nombre: "Laura Gómez",
+                  email: "laura.gomez@universidad.edu",
+                  carrera: "Ingeniería de Software y computación",
+                  semestre: 5
+                },
+                asistenciaEstudiante: null,
+                participantes: [
+                  {
+                    estudiante: {
+                      _id: "65f1a2b3c4d5e6f7a8b9c0d2",
+                      nombre: "Mateo Silva",
+                      email: "mateo@universidad.edu",
+                      carrera: "Ingeniería de Software y computación",
+                      semestre: 4
+                    },
+                    asistio: true
+                  }
+                ],
+                profesor: {
+                  _id: "65f1a2b3c4d5e6f7a8b9c099",
+                  nombre: "Dr. Carlos Ruiz",
+                  email: "carlos.ruiz@universidad.edu",
+                  escuela: "Escuela de Ingeniería",
+                  carrera: "Ingeniería de Software y computación"
+                },
+                materia: "Estructuras de Datos",
+                tema: "Árboles AVL y Grafos",
+                descripcion: "Repaso de rotaciones dobles para el parcial",
+                hora: "Lunes 08:00 - 10:00",
+                modalidad: "virtual",
+                tipo: "grupal",
+                cupoMaximo: 10,
+                comentarioProfesor: "https://meet.google.com/abc-defg-hij",
+                enlaceGrabacion: "",
+                estado: "aceptada",
+                recursos: ["https://drive.google.com/file/d/guia-avl"],
+                createdAt: "2026-11-12T15:00:00.000Z"
+              }
+            ],
+            errors: [
+              { code: 500, msg: '{ "message": "Error al obtener tutorías" }' }
+            ]
+          },
+          {
+            id: "tut-grupales",
+            method: "GET",
+            path: "/api/tutorias/grupales",
+            summary: "Listar tutorías grupales abiertas para inscripción",
+            description: "Devuelve todas las tutorías con tipo='grupal' y estado='aceptada'. Si consulta un estudiante con carrera registrada, filtra las sesiones de profesores de su misma carrera.",
+            auth: "Bearer JWT",
+            roles: ["estudiante", "profesor", "admin"],
+            params: [],
+            bodyFields: [],
+            requestExample: null,
+            responseStatus: "200 OK",
+            responseExample: [
+              {
+                _id: "65f200112233445566778899",
+                materia: "Estructuras de Datos",
+                tema: "Árboles AVL y Grafos",
+                hora: "Lunes 08:00 - 10:00",
+                modalidad: "virtual",
+                tipo: "grupal",
+                cupoMaximo: 10,
+                estado: "aceptada",
+                estudiante: { _id: "65f1...", nombre: "Laura Gómez", email: "laura@universidad.edu" },
+                participantes: [],
+                profesor: { _id: "65f1...", nombre: "Dr. Carlos Ruiz", carrera: "Ingeniería de Software y computación" }
+              }
+            ],
+            errors: [
+              { code: 500, msg: '{ "message": "Error al obtener tutorías grupales" }' }
+            ]
+          },
+          {
+            id: "tut-crear",
+            method: "POST",
+            path: "/api/tutorias",
+            summary: "Crear nueva solicitud de tutoría",
+            description: "Registra una solicitud en estado 'pendiente' asignando como estudiante solicitante al usuario autenticado en el token (req.user.id).",
+            auth: "Bearer JWT",
+            roles: ["estudiante"],
+            params: [],
+            bodyFields: [
+              { name: "materia", type: "string", required: true, desc: "Nombre de la materia solicitada" },
+              { name: "descripcion", type: "string", required: true, desc: "Explicación detallada de la duda académica" },
+              { name: "tema", type: "string", required: false, desc: "Tema puntual a consultar" },
+              { name: "profesorId", type: "string (ObjectId)", required: false, desc: "ID del profesor (se guarda en el campo 'profesor')" },
+              { name: "hora", type: "string", required: false, desc: "Franja horaria seleccionada (ej: 'Lunes 08:00 - 10:00')" },
+              { name: "modalidad", type: "'virtual' | 'presencial'", required: false, desc: "Por defecto: 'virtual'" },
+              { name: "tipo", type: "'individual' | 'grupal'", required: false, desc: "Por defecto: 'individual'" }
+            ],
+            requestExample: {
+              materia: "Estructuras de Datos",
+              tema: "Árboles Balanceados",
+              descripcion: "Tengo dudas sobre cómo implementar la rotación doble izquierda-derecha.",
+              profesorId: "65f1a2b3c4d5e6f7a8b9c099",
+              hora: "Lunes 08:00 - 10:00",
+              modalidad: "virtual",
+              tipo: "individual"
+            },
+            responseStatus: "201 Created",
+            responseExample: {
+              _id: "65f200112233445566778899",
+              estudiante: "65f1a2b3c4d5e6f7a8b9c0d1",
+              profesor: "65f1a2b3c4d5e6f7a8b9c099",
+              materia: "Estructuras de Datos",
+              tema: "Árboles Balanceados",
+              descripcion: "Tengo dudas sobre cómo implementar la rotación doble izquierda-derecha.",
+              hora: "Lunes 08:00 - 10:00",
+              modalidad: "virtual",
+              tipo: "individual",
+              cupoMaximo: 10,
+              estado: "pendiente",
+              participantes: [],
+              recursos: []
+            },
+            errors: [
+              { code: 500, msg: '{ "message": "Error al crear la solicitud" }' }
+            ]
+          },
+          {
+            id: "tut-actualizar",
+            method: "PATCH",
+            path: "/api/tutorias/:id",
+            summary: "Aceptar, aplazar, configurar o cancelar tutoría",
+            description: "Si el rol es 'estudiante', únicamente puede enviar { estado: 'cancelada' } cuando la solicitud está 'pendiente' o 'aplazada'. Si es 'profesor', puede aceptar, aplazar, definir modalidad, tipo (individual/grupal), cupoMaximo, enlace de reunión y grabación.",
+            auth: "Bearer JWT",
+            roles: ["estudiante", "profesor", "admin"],
+            params: [
+              { name: "id", in: "path", type: "string (ObjectId)", required: true, desc: "ID de la solicitud de tutoría" }
+            ],
+            bodyFields: [
+              { name: "estado", type: "'pendiente' | 'aceptada' | 'cancelada' | 'aplazada' | 'finalizada'", required: false, desc: "Nuevo estado de la tutoría" },
+              { name: "hora", type: "string", required: false, desc: "Horario confirmado o reprogramado" },
+              { name: "modalidad", type: "'virtual' | 'presencial'", required: false, desc: "Modalidad definida por el profesor" },
+              { name: "tipo", type: "'individual' | 'grupal'", required: false, desc: "Define si se abre a otros estudiantes" },
+              { name: "cupoMaximo", type: "number", required: false, desc: "Cantidad máxima de asistentes si es grupal" },
+              { name: "comentarioProfesor", type: "string", required: false, desc: "Link de Meet/Zoom, salón o motivo de aplazamiento" },
+              { name: "enlaceGrabacion", type: "string", required: false, desc: "URL de grabación de la clase" }
+            ],
+            requestExample: {
+              estado: "aceptada",
+              hora: "Lunes 08:00 - 10:00",
+              modalidad: "virtual",
+              tipo: "grupal",
+              cupoMaximo: 12,
+              comentarioProfesor: "https://meet.google.com/xyz-abcd-efg"
+            },
+            responseStatus: "200 OK",
+            responseExample: {
+              _id: "65f200112233445566778899",
+              estado: "aceptada",
+              hora: "Lunes 08:00 - 10:00",
+              modalidad: "virtual",
+              tipo: "grupal",
+              cupoMaximo: 12,
+              comentarioProfesor: "https://meet.google.com/xyz-abcd-efg"
+            },
+            errors: [
+              { code: 400, msg: '{ "message": "Solo se pueden cancelar solicitudes pendientes o aplazadas" }' },
+              { code: 403, msg: '{ "message": "Solo puedes cancelar tu solicitud" }' },
+              { code: 404, msg: '{ "message": "Tutoría no encontrada" }' }
+            ]
+          },
+          {
+            id: "tut-inscribirse",
+            method: "POST",
+            path: "/api/tutorias/:id/inscribirse",
+            summary: "Inscribirse como participante en una tutoría grupal",
+            description: "Agrega al estudiante autenticado (req.user.id) al arreglo 'participantes' de una tutoría grupal aceptada, verificando que no sea el solicitante principal, que no esté inscrito previamente y que haya cupo disponible.",
+            auth: "Bearer JWT",
+            roles: ["estudiante"],
+            params: [
+              { name: "id", in: "path", type: "string (ObjectId)", required: true, desc: "ID de la tutoría grupal" }
+            ],
+            bodyFields: [],
+            requestExample: {},
+            responseStatus: "200 OK",
+            responseExample: {
+              message: "Inscripción exitosa",
+              tutoria: {
+                _id: "65f200112233445566778899",
+                tipo: "grupal",
+                cupoMaximo: 10,
+                participantes: [
+                  { estudiante: "65f1a2b3c4d5e6f7a8b9c0d2", asistio: null }
+                ]
+              }
+            },
+            errors: [
+              { code: 400, msg: '{ "message": "Esta tutoría no está disponible para inscripción grupal" }' },
+              { code: 400, msg: '{ "message": "Ya eres el solicitante principal de esta tutoría" }' },
+              { code: 400, msg: '{ "message": "Ya estás inscrito en esta tutoría grupal" }' },
+              { code: 400, msg: '{ "message": "Cupo máximo alcanzado para esta tutoría" }' },
+              { code: 404, msg: '{ "message": "Tutoría no encontrada" }' }
+            ]
+          },
+          {
+            id: "tut-asistencia",
+            method: "PATCH",
+            path: "/api/tutorias/:id/asistencia",
+            summary: "Registrar asistencia del solicitante y/o participantes",
+            description: "Permite al profesor marcar si el estudiante principal asistió (asistenciaEstudiante) y/o actualizar el estado de asistencia de los participantes grupales.",
+            auth: "Bearer JWT",
+            roles: ["profesor", "admin"],
+            params: [
+              { name: "id", in: "path", type: "string (ObjectId)", required: true, desc: "ID de la tutoría" }
+            ],
+            bodyFields: [
+              { name: "asistenciaEstudiante", type: "boolean", required: false, desc: "Asistencia del estudiante solicitante principal (true/false)" },
+              { name: "participantes", type: "Array<{ estudianteId: string, asistio: boolean | null }>", required: false, desc: "Lista de asistencias a actualizar para inscritos grupales" }
+            ],
+            requestExample: {
+              asistenciaEstudiante: true,
+              participantes: [
+                { estudianteId: "65f1a2b3c4d5e6f7a8b9c0d2", asistio: true }
+              ]
+            },
+            responseStatus: "200 OK",
+            responseExample: {
+              _id: "65f200112233445566778899",
+              asistenciaEstudiante: true,
+              participantes: [
+                { estudiante: "65f1a2b3c4d5e6f7a8b9c0d2", asistio: true }
+              ]
+            },
+            errors: [
+              { code: 404, msg: '{ "message": "Tutoría no encontrada" }' },
+              { code: 500, msg: '{ "message": "Error al guardar asistencia" }' }
+            ]
+          },
+          {
+            id: "tut-recursos",
+            method: "POST",
+            path: "/api/tutorias/:id/recursos",
+            summary: "Adjuntar enlace de recurso a la sesión activa",
+            description: "Agrega ($push) una URL al arreglo 'recursos' de la tutoría.",
+            auth: "Bearer JWT",
+            roles: ["profesor", "admin"],
+            params: [
+              { name: "id", in: "path", type: "string (ObjectId)", required: true, desc: "ID de la tutoría" }
+            ],
+            bodyFields: [
+              { name: "link", type: "string (URL)", required: true, desc: "Enlace al material de estudio, PDF o repositorio" }
+            ],
+            requestExample: {
+              link: "https://drive.google.com/file/d/ejercicios-resueltos"
+            },
+            responseStatus: "200 OK",
+            responseExample: {
+              _id: "65f200112233445566778899",
+              recursos: ["https://drive.google.com/file/d/ejercicios-resueltos"]
+            },
+            errors: [
+              { code: 500, msg: '{ "message": "Error al agregar recurso" }' }
+            ]
+          },
+          {
+            id: "tut-finalizar",
+            method: "PATCH",
+            path: "/api/tutorias/:id/finalizar",
+            summary: "Finalizar tutoría y publicar materiales en Recursos",
+            description: "Cambia el estado de la tutoría a 'finalizada', actualiza comentarioProfesor/enlaceGrabacion y crea automáticamente registros en la colección Recurso por cada enlace y grabación de la sesión.",
+            auth: "Bearer JWT",
+            roles: ["profesor", "admin"],
+            params: [
+              { name: "id", in: "path", type: "string (ObjectId)", required: true, desc: "ID de la tutoría a finalizar" }
+            ],
+            bodyFields: [
+              { name: "comentarioProfesor", type: "string", required: false, desc: "Nota final o resumen de la sesión" },
+              { name: "enlaceGrabacion", type: "string (URL)", required: false, desc: "Enlace a la grabación en la nube" }
+            ],
+            requestExample: {
+              comentarioProfesor: "Se revisaron 4 ejercicios tipo parcial.",
+              enlaceGrabacion: "https://drive.google.com/file/d/grabacion-sesion"
+            },
+            responseStatus: "200 OK",
+            responseExample: {
+              _id: "65f200112233445566778899",
+              estado: "finalizada",
+              comentarioProfesor: "Se revisaron 4 ejercicios tipo parcial.",
+              enlaceGrabacion: "https://drive.google.com/file/d/grabacion-sesion"
+            },
+            errors: [
+              { code: 404, msg: '{ "message": "Tutoría no encontrada" }' },
+              { code: 500, msg: '{ "message": "Error al finalizar tutoría" }' }
+            ]
+          }
+        ]
+      },
+      {
+        id: "mod-horarios",
+        code: "03. Agenda y Disponibilidad Docente",
+        title: "Módulo de Horarios (/api/horarios)",
+        subtitle: "Administración de bloques semanales de atención de cada profesor y consulta de disponibilidad por parte de los estudiantes.",
+        fileRef: "src/routes/horarios.routes.ts • src/controllers/horarios.controller.ts",
+        icon: "calendar_month",
+        endpoints: [
+          {
+            id: "hor-listar",
+            method: "GET",
+            path: "/api/horarios",
+            summary: "Consultar horarios disponibles",
+            description: "Si se envía ?profesorId, filtra por ese docente. Si no se envía y quien consulta es 'profesor', devuelve sus propios horarios. Si es 'estudiante', devuelve los horarios de todos los profesores activos.",
+            auth: "Bearer JWT",
+            roles: ["estudiante", "profesor", "admin"],
+            params: [
+              { name: "profesorId", in: "query", type: "string (ObjectId)", required: false, desc: "ID del profesor para filtrar sus bloques horarios" }
+            ],
+            bodyFields: [],
+            requestExample: null,
+            responseStatus: "200 OK",
+            responseExample: [
+              {
+                _id: "65f300112233445566778800",
+                profesor: {
+                  _id: "65f1a2b3c4d5e6f7a8b9c099",
+                  nombre: "Dr. Carlos Ruiz",
+                  email: "carlos.ruiz@universidad.edu",
+                  rol: "profesor"
+                },
+                dia: "Lunes",
+                horaInicio: "08:00",
+                horaFin: "10:00"
+              }
+            ],
+            errors: [
+              { code: 500, msg: '{ "message": "Error al obtener horarios" }' }
+            ]
+          },
+          {
+            id: "hor-crear",
+            method: "POST",
+            path: "/api/horarios",
+            summary: "Registrar nueva franja horaria",
+            description: "Crea un bloque de disponibilidad asociado automáticamente al profesor autenticado (profesor: req.user.id).",
+            auth: "Bearer JWT",
+            roles: ["profesor"],
+            params: [],
+            bodyFields: [
+              { name: "dia", type: "string", required: true, desc: "Día de la semana (Lunes, Martes, Miércoles, Jueves, Viernes, Sábado)" },
+              { name: "horaInicio", type: "string (HH:mm)", required: true, desc: "Hora de inicio en formato 24h (ej: '08:00')" },
+              { name: "horaFin", type: "string (HH:mm)", required: true, desc: "Hora de finalización en formato 24h (ej: '10:00')" }
+            ],
+            requestExample: {
+              dia: "Miércoles",
+              horaInicio: "14:00",
+              horaFin: "16:00"
+            },
+            responseStatus: "201 Created",
+            responseExample: {
+              _id: "65f300112233445566778801",
+              profesor: "65f1a2b3c4d5e6f7a8b9c099",
+              dia: "Miércoles",
+              horaInicio: "14:00",
+              horaFin: "16:00"
+            },
+            errors: [
+              { code: 500, msg: '{ "message": "Error al crear horario" }' }
+            ]
+          },
+          {
+            id: "hor-eliminar",
+            method: "DELETE",
+            path: "/api/horarios/:id",
+            summary: "Eliminar franja horaria",
+            description: "Elimina permanentemente un bloque de horario por su ObjectId.",
+            auth: "Bearer JWT",
+            roles: ["profesor", "admin"],
+            params: [
+              { name: "id", in: "path", type: "string (ObjectId)", required: true, desc: "ID del horario a eliminar" }
+            ],
+            bodyFields: [],
+            requestExample: null,
+            responseStatus: "200 OK",
+            responseExample: {
+              message: "Horario eliminado"
+            },
+            errors: [
+              { code: 500, msg: '{ "message": "Error al eliminar horario" }' }
+            ]
+          }
+        ]
+      },
+      {
+        id: "mod-recursos",
+        code: "04. Biblioteca y Repositorio Digital",
+        title: "Módulo de Recursos Académicos (/api/recursos)",
+        subtitle: "Consulta y publicación de guías, libros, presentaciones y grabaciones clasificadas por Escuela y Materia.",
+        fileRef: "src/routes/recursos.routes.ts • src/controllers/recursos.controller.ts",
+        icon: "library_books",
+        endpoints: [
+          {
+            id: "rec-escuelas",
+            method: "GET",
+            path: "/api/recursos/escuelas",
+            summary: "Obtener escuelas y escuela predeterminada del usuario",
+            description: "Lista todas las escuelas ordenadas alfabéticamente y resuelve 'miEscuela' a partir del perfil del usuario autenticado (o cruzando su carrera con la colección Carrera).",
+            auth: "Bearer JWT",
+            roles: ["estudiante", "profesor", "admin"],
+            params: [],
+            bodyFields: [],
+            requestExample: null,
+            responseStatus: "200 OK",
+            responseExample: {
+              escuelas: [
+                { _id: "65f40011...", nombre: "Escuela de Ciencias Exactas", codigo: "ESC-CIE" },
+                { _id: "65f40012...", nombre: "Escuela de Ingeniería", codigo: "ESC-ING" }
+              ],
+              miEscuela: "Escuela de Ingeniería"
+            },
+            errors: [
+              { code: 500, msg: '{ "message": "Error al obtener escuelas" }' }
+            ]
+          },
+          {
+            id: "rec-listar",
+            method: "GET",
+            path: "/api/recursos",
+            summary: "Listar recursos académicos (filtrables por escuela)",
+            description: "Devuelve los recursos publicados ordenados de más reciente a más antiguo, poblando los datos del profesor autor.",
+            auth: "Bearer JWT",
+            roles: ["estudiante", "profesor", "admin"],
+            params: [
+              { name: "escuela", in: "query", type: "string", required: false, desc: "Nombre de la escuela a filtrar (si es 'todas' o se omite, devuelve todos)" }
+            ],
+            bodyFields: [],
+            requestExample: null,
+            responseStatus: "200 OK",
+            responseExample: [
+              {
+                _id: "65f500112233445566778899",
+                titulo: "Guía de Ejercicios Resueltos — Integrales Dobles",
+                escuela: "Escuela de Ingeniería",
+                materia: "Cálculo Multivariable",
+                tema: "Integrales Múltiples",
+                claseOrigen: "Clase: Cálculo Multivariable - Integrales Múltiples",
+                link: "https://drive.google.com/file/d/guia-integrales",
+                profesor: {
+                  _id: "65f1a2b3c4d5e6f7a8b9c099",
+                  nombre: "Dr. Carlos Ruiz",
+                  email: "carlos.ruiz@universidad.edu",
+                  escuela: "Escuela de Ingeniería",
+                  carrera: "Ingeniería de Software y computación"
+                },
+                createdAt: "2026-11-12T16:30:00.000Z"
+              }
+            ],
+            errors: [
+              { code: 500, msg: '{ "message": "Error al obtener recursos" }' }
+            ]
+          },
+          {
+            id: "rec-crear",
+            method: "POST",
+            path: "/api/recursos",
+            summary: "Publicar un nuevo recurso académico",
+            description: "Crea un recurso asignando profesor=req.user.id. Si no se envía escuela, toma automáticamente la escuela del perfil del profesor o 'General'.",
+            auth: "Bearer JWT",
+            roles: ["profesor", "admin"],
+            params: [],
+            bodyFields: [
+              { name: "titulo", type: "string", required: true, desc: "Título descriptivo del recurso" },
+              { name: "materia", type: "string", required: true, desc: "Asignatura a la que pertenece" },
+              { name: "link", type: "string (URL)", required: true, desc: "URL del documento, video o repositorio" },
+              { name: "escuela", type: "string", required: false, desc: "Nombre de la escuela (default: escuela del docente o 'General')" },
+              { name: "tema", type: "string", required: false, desc: "Tema específico (default: '')" },
+              { name: "claseOrigen", type: "string", required: false, desc: "Etiqueta de sesión de origen (default: '')" }
+            ],
+            requestExample: {
+              titulo: "Formulario de Transformada de Laplace",
+              escuela: "Escuela de Ingeniería",
+              materia: "Ecuaciones Diferenciales",
+              tema: "Transformada de Laplace",
+              link: "https://drive.google.com/file/d/laplace-pdf"
+            },
+            responseStatus: "201 Created",
+            responseExample: {
+              _id: "65f500112233445566778900",
+              titulo: "Formulario de Transformada de Laplace",
+              escuela: "Escuela de Ingeniería",
+              materia: "Ecuaciones Diferenciales",
+              tema: "Transformada de Laplace",
+              claseOrigen: "",
+              link: "https://drive.google.com/file/d/laplace-pdf",
+              profesor: "65f1a2b3c4d5e6f7a8b9c099"
+            },
+            errors: [
+              { code: 500, msg: '{ "message": "Error al publicar recurso" }' }
+            ]
+          }
+        ]
+      },
+      {
+        id: "mod-admin",
+        code: "05. Control Institucional y Catálogo Académico",
+        title: "Módulo de Administración (/api/admin)",
+        subtitle: "Gestión integral de usuarios, roles, escuelas, carreras, materias y reportes globales. Protegido con doble middleware: verificarToken + permitirRoles('admin').",
+        fileRef: "src/routes/admin.routes.ts • src/controllers/admin.controller.ts",
+        icon: "admin_panel_settings",
+        endpoints: [
+          {
+            id: "adm-usuarios-get",
+            method: "GET",
+            path: "/api/admin/usuarios",
+            summary: "Listar todos los usuarios registrados",
+            description: "Devuelve todos los usuarios del sistema excluyendo el campo passwordHash, ordenados por fecha de creación descendente.",
+            auth: "Bearer JWT + Rol Admin",
+            roles: ["admin"],
+            params: [],
+            bodyFields: [],
+            requestExample: null,
+            responseStatus: "200 OK",
+            responseExample: [
+              {
+                _id: "65f1a2b3c4d5e6f7a8b9c099",
+                nombre: "Dr. Carlos Ruiz",
+                email: "carlos.ruiz@universidad.edu",
+                rol: "profesor",
+                escuela: "Escuela de Ingeniería",
+                carrera: "Ingeniería de Software y computación",
+                materias: ["Cálculo Multivariable", "Estructuras de Datos"],
+                createdAt: "2026-11-12T12:00:00.000Z"
+              }
+            ],
+            errors: [
+              { code: 403, msg: '{ "message": "No tienes permisos para realizar esta acción." }' }
+            ]
+          },
+          {
+            id: "adm-usuarios-post",
+            method: "POST",
+            path: "/api/admin/usuarios",
+            summary: "Crear usuario institucional (Estudiante, Profesor o Admin)",
+            description: "Permite al administrador crear cuentas de cualquier rol y asignar escuela, carrera, semestre o lista de materias según corresponda.",
+            auth: "Bearer JWT + Rol Admin",
+            roles: ["admin"],
+            params: [],
+            bodyFields: [
+              { name: "nombre", type: "string", required: true, desc: "Nombre completo" },
+              { name: "email", type: "string", required: true, desc: "Correo institucional único" },
+              { name: "password", type: "string", required: true, desc: "Contraseña inicial de acceso" },
+              { name: "rol", type: "'estudiante' | 'profesor' | 'admin'", required: true, desc: "Nivel de acceso del usuario" },
+              { name: "escuela", type: "string", required: false, desc: "Escuela asignada (solo aplica si rol === 'profesor')" },
+              { name: "carrera", type: "string", required: false, desc: "Carrera asignada (aplica a 'profesor' y 'estudiante')" },
+              { name: "semestre", type: "number", required: false, desc: "Semestre actual (solo aplica si rol === 'estudiante')" },
+              { name: "materias", type: "string[]", required: false, desc: "Arreglo de materias que imparte (solo si rol === 'profesor')" }
+            ],
+            requestExample: {
+              nombre: "Dra. Marcela Restrepo",
+              email: "marcela.restrepo@universidad.edu",
+              password: "PasswordSeguro2026",
+              rol: "profesor",
+              escuela: "Escuela de Ingeniería",
+              carrera: "Ingeniería de Software y computación",
+              materias: ["Ingeniería de Requisitos", "Arquitectura de Software"]
+            },
+            responseStatus: "201 Created",
+            responseExample: {
+              _id: "65f600112233445566778811",
+              nombre: "Dra. Marcela Restrepo",
+              email: "marcela.restrepo@universidad.edu",
+              rol: "profesor",
+              escuela: "Escuela de Ingeniería",
+              carrera: "Ingeniería de Software y computación",
+              materias: ["Ingeniería de Requisitos", "Arquitectura de Software"]
+            },
+            errors: [
+              { code: 400, msg: '{ "message": "Todos los campos básicos son obligatorios" }' },
+              { code: 400, msg: '{ "message": "Rol no válido" }' },
+              { code: 400, msg: '{ "message": "El correo ya está registrado" }' }
+            ]
+          },
+          {
+            id: "adm-usuarios-put",
+            method: "PUT",
+            path: "/api/admin/usuarios/:id",
+            summary: "Actualizar datos y asignación académica de un usuario",
+            description: "Actualiza perfil, rol ('estudiante' o 'profesor'), contraseña opcional y asignación académica. Las cuentas con rol 'admin' están protegidas y no pueden ser modificadas.",
+            auth: "Bearer JWT + Rol Admin",
+            roles: ["admin"],
+            params: [
+              { name: "id", in: "path", type: "string (ObjectId)", required: true, desc: "ID del usuario a editar" }
+            ],
+            bodyFields: [
+              { name: "nombre", type: "string", required: false, desc: "Nuevo nombre completo" },
+              { name: "email", type: "string", required: false, desc: "Nuevo correo (valida que no esté en uso)" },
+              { name: "password", type: "string", required: false, desc: "Si se envía vacío o se omite, mantiene la contraseña actual" },
+              { name: "rol", type: "'estudiante' | 'profesor'", required: false, desc: "No permite asignar 'admin'" },
+              { name: "escuela", type: "string", required: false, desc: "Escuela del profesor" },
+              { name: "carrera", type: "string", required: false, desc: "Carrera del profesor o estudiante" },
+              { name: "semestre", type: "number", required: false, desc: "Semestre del estudiante" },
+              { name: "materias", type: "string[]", required: false, desc: "Materias asignadas al profesor" }
+            ],
+            requestExample: {
+              nombre: "Dra. Marcela Restrepo",
+              email: "marcela.restrepo@universidad.edu",
+              password: "",
+              rol: "profesor",
+              escuela: "Escuela de Ingeniería",
+              carrera: "Ingeniería de Software y computación",
+              materias: ["Arquitectura de Software", "Base de Datos II"]
+            },
+            responseStatus: "200 OK",
+            responseExample: {
+              _id: "65f600112233445566778811",
+              nombre: "Dra. Marcela Restrepo",
+              email: "marcela.restrepo@universidad.edu",
+              rol: "profesor",
+              escuela: "Escuela de Ingeniería",
+              carrera: "Ingeniería de Software y computación",
+              materias: ["Arquitectura de Software", "Base de Datos II"]
+            },
+            errors: [
+              { code: 400, msg: '{ "message": "No se puede asignar el rol de administrador" }' },
+              { code: 400, msg: '{ "message": "El correo ya está en uso por otro usuario" }' },
+              { code: 403, msg: '{ "message": "No se puede modificar un usuario administrador" }' },
+              { code: 404, msg: '{ "message": "Usuario no encontrado" }' }
+            ]
+          },
+          {
+            id: "adm-usuarios-rol",
+            method: "PATCH",
+            path: "/api/admin/usuarios/:id/rol",
+            summary: "Cambio rápido de rol (Estudiante ↔ Profesor)",
+            description: "Cambia únicamente el campo 'rol' de un usuario no administrador.",
+            auth: "Bearer JWT + Rol Admin",
+            roles: ["admin"],
+            params: [
+              { name: "id", in: "path", type: "string (ObjectId)", required: true, desc: "ID del usuario" }
+            ],
+            bodyFields: [
+              { name: "rol", type: "'estudiante' | 'profesor'", required: true, desc: "Nuevo rol a asignar" }
+            ],
+            requestExample: {
+              rol: "profesor"
+            },
+            responseStatus: "200 OK",
+            responseExample: {
+              _id: "65f1a2b3c4d5e6f7a8b9c0d1",
+              nombre: "Laura Gómez",
+              rol: "profesor"
+            },
+            errors: [
+              { code: 400, msg: '{ "message": "Rol no permitido" }' },
+              { code: 403, msg: '{ "message": "El rol de administrador no se puede modificar" }' },
+              { code: 404, msg: '{ "message": "Usuario no encontrado" }' }
+            ]
+          },
+          {
+            id: "adm-usuarios-delete",
+            method: "DELETE",
+            path: "/api/admin/usuarios/:id",
+            summary: "Eliminar cuenta de usuario",
+            description: "Elimina permanentemente un usuario de la base de datos. Protege las cuentas con rol 'admin'.",
+            auth: "Bearer JWT + Rol Admin",
+            roles: ["admin"],
+            params: [
+              { name: "id", in: "path", type: "string (ObjectId)", required: true, desc: "ID del usuario a eliminar" }
+            ],
+            bodyFields: [],
+            requestExample: null,
+            responseStatus: "200 OK",
+            responseExample: {
+              message: "Usuario eliminado correctamente"
+            },
+            errors: [
+              { code: 403, msg: '{ "message": "No se puede eliminar un usuario administrador" }' },
+              { code: 404, msg: '{ "message": "Usuario no encontrado" }' }
+            ]
+          },
+          {
+            id: "adm-catalogo-get",
+            method: "GET",
+            path: "/api/admin/catalogo",
+            summary: "Obtener catálogo académico completo (Escuelas, Carreras y Materias)",
+            description: "Devuelve en una sola llamada las tres colecciones del catálogo académico con sus referencias pobladas (escuela en Carrera y carrera en Materia).",
+            auth: "Bearer JWT + Rol Admin",
+            roles: ["admin"],
+            params: [],
+            bodyFields: [],
+            requestExample: null,
+            responseStatus: "200 OK",
+            responseExample: {
+              escuelas: [
+                { _id: "65f40012...", nombre: "Escuela de Ingeniería", codigo: "ESC-ING" }
+              ],
+              carreras: [
+                {
+                  _id: "65f40022...",
+                  nombre: "Ingeniería de Software y computación",
+                  codigo: "ING-SW",
+                  escuela: { _id: "65f40012...", nombre: "Escuela de Ingeniería" }
+                }
+              ],
+              materias: [
+                {
+                  _id: "65f40033...",
+                  nombre: "Estructuras de Datos",
+                  codigo: "ISIS-201",
+                  carrera: { _id: "65f40022...", nombre: "Ingeniería de Software y computación" }
+                }
+              ]
+            },
+            errors: [
+              { code: 500, msg: '{ "message": "Error al obtener catálogo académico" }' }
+            ]
+          },
+          {
+            id: "adm-escuelas-post",
+            method: "POST",
+            path: "/api/admin/escuelas",
+            summary: "Crear nueva Escuela / Facultad",
+            description: "Registra una escuela en el catálogo institucional.",
+            auth: "Bearer JWT + Rol Admin",
+            roles: ["admin"],
+            params: [],
+            bodyFields: [
+              { name: "nombre", type: "string", required: true, desc: "Nombre único de la escuela" },
+              { name: "codigo", type: "string", required: true, desc: "Código único institucional (ej: 'ESC-ING')" }
+            ],
+            requestExample: {
+              nombre: "Escuela de Ingeniería",
+              codigo: "ESC-ING"
+            },
+            responseStatus: "201 Created",
+            responseExample: {
+              _id: "65f40012...",
+              nombre: "Escuela de Ingeniería",
+              codigo: "ESC-ING"
+            },
+            errors: [
+              { code: 500, msg: '{ "message": "Error al crear escuela" }' }
+            ]
+          },
+          {
+            id: "adm-escuelas-delete",
+            method: "DELETE",
+            path: "/api/admin/escuelas/:id",
+            summary: "Eliminar Escuela",
+            description: "Elimina una escuela por su ObjectId.",
+            auth: "Bearer JWT + Rol Admin",
+            roles: ["admin"],
+            params: [
+              { name: "id", in: "path", type: "string (ObjectId)", required: true, desc: "ID de la escuela" }
+            ],
+            bodyFields: [],
+            requestExample: null,
+            responseStatus: "200 OK",
+            responseExample: { message: "Escuela eliminada" },
+            errors: [
+              { code: 500, msg: '{ "message": "Error al eliminar escuela" }' }
+            ]
+          },
+          {
+            id: "adm-carreras-post",
+            method: "POST",
+            path: "/api/admin/carreras",
+            summary: "Crear nueva Carrera universitaria",
+            description: "Registra una carrera vinculada al ObjectId de una Escuela existente.",
+            auth: "Bearer JWT + Rol Admin",
+            roles: ["admin"],
+            params: [],
+            bodyFields: [
+              { name: "nombre", type: "string", required: true, desc: "Nombre de la carrera" },
+              { name: "codigo", type: "string", required: true, desc: "Código único de la carrera (ej: 'ING-SW')" },
+              { name: "escuela", type: "string (ObjectId)", required: true, desc: "ID de la Escuela a la que pertenece" }
+            ],
+            requestExample: {
+              nombre: "Ingeniería de Software y computación",
+              codigo: "ING-SW",
+              escuela: "65f40012aabbccddeeff0011"
+            },
+            responseStatus: "201 Created",
+            responseExample: {
+              _id: "65f40022...",
+              nombre: "Ingeniería de Software y computación",
+              codigo: "ING-SW",
+              escuela: "65f40012aabbccddeeff0011"
+            },
+            errors: [
+              { code: 500, msg: '{ "message": "Error al crear carrera" }' }
+            ]
+          },
+          {
+            id: "adm-carreras-delete",
+            method: "DELETE",
+            path: "/api/admin/carreras/:id",
+            summary: "Eliminar Carrera",
+            description: "Elimina una carrera por su ObjectId.",
+            auth: "Bearer JWT + Rol Admin",
+            roles: ["admin"],
+            params: [
+              { name: "id", in: "path", type: "string (ObjectId)", required: true, desc: "ID de la carrera" }
+            ],
+            bodyFields: [],
+            requestExample: null,
+            responseStatus: "200 OK",
+            responseExample: { message: "Carrera eliminada" },
+            errors: [
+              { code: 500, msg: '{ "message": "Error al eliminar carrera" }' }
+            ]
+          },
+          {
+            id: "adm-materias-post",
+            method: "POST",
+            path: "/api/admin/materias",
+            summary: "Crear nueva Materia / Asignatura",
+            description: "Registra una asignatura vinculada al ObjectId de una Carrera existente.",
+            auth: "Bearer JWT + Rol Admin",
+            roles: ["admin"],
+            params: [],
+            bodyFields: [
+              { name: "nombre", type: "string", required: true, desc: "Nombre de la materia" },
+              { name: "codigo", type: "string", required: true, desc: "Código único de la asignatura (ej: 'MAT-101')" },
+              { name: "carrera", type: "string (ObjectId)", required: true, desc: "ID de la Carrera a la que pertenece" }
+            ],
+            requestExample: {
+              nombre: "Estructuras de Datos",
+              codigo: "ISIS-201",
+              carrera: "65f40022aabbccddeeff0022"
+            },
+            responseStatus: "201 Created",
+            responseExample: {
+              _id: "65f40033...",
+              nombre: "Estructuras de Datos",
+              codigo: "ISIS-201",
+              carrera: "65f40022aabbccddeeff0022"
+            },
+            errors: [
+              { code: 500, msg: '{ "message": "Error al crear materia" }' }
+            ]
+          },
+          {
+            id: "adm-materias-delete",
+            method: "DELETE",
+            path: "/api/admin/materias/:id",
+            summary: "Eliminar Materia",
+            description: "Elimina una materia por su ObjectId.",
+            auth: "Bearer JWT + Rol Admin",
+            roles: ["admin"],
+            params: [
+              { name: "id", in: "path", type: "string (ObjectId)", required: true, desc: "ID de la materia" }
+            ],
+            bodyFields: [],
+            requestExample: null,
+            responseStatus: "200 OK",
+            responseExample: { message: "Materia eliminada" },
+            errors: [
+              { code: 500, msg: '{ "message": "Error al eliminar materia" }' }
+            ]
+          },
+          {
+            id: "adm-reportes-get",
+            method: "GET",
+            path: "/api/admin/reportes",
+            summary: "Obtener KPIs y métricas globales del sistema",
+            description: "Calcula en tiempo real el total de estudiantes, profesores y el desglose de tutorías por estado (pendientes, aceptadas y finalizadas).",
+            auth: "Bearer JWT + Rol Admin",
+            roles: ["admin"],
+            params: [],
+            bodyFields: [],
+            requestExample: null,
+            responseStatus: "200 OK",
+            responseExample: {
+              totalUsuarios: 48,
+              totalEstudiantes: 40,
+              totalProfesores: 8,
+              totalTutorias: 135,
+              tutoriasPendientes: 14,
+              tutoriasAceptadas: 26,
+              tutoriasFinalizadas: 85
+            },
+            errors: [
+              { code: 500, msg: '{ "message": "Error al generar métricas del sistema" }' }
+            ]
+          }
+        ]
+      }
+    ];
+
+    const MONGOOSE_MODELS = [
+      {
+        name: "Usuario",
+        file: "src/models/Usuario.ts",
+        icon: "group",
+        fields: [
+          { name: "_id", type: "ObjectId", req: "Auto", def: "—", desc: "Identificador único del documento" },
+          { name: "nombre", type: "string", req: "Sí", def: "—", desc: "Nombre completo del usuario" },
+          { name: "email", type: "string", req: "Sí (Único)", def: "—", desc: "Correo institucional único" },
+          { name: "passwordHash", type: "string", req: "Sí", def: "—", desc: "Hash bcrypt (oculto con -passwordHash)" },
+          { name: "rol", type: "'estudiante' | 'profesor' | 'admin'", req: "No", def: "'estudiante'", desc: "Rol de autorización en el sistema" },
+          { name: "escuela", type: "string", req: "No", def: "undefined", desc: "Nombre de la escuela (profesores)" },
+          { name: "carrera", type: "string", req: "No", def: "undefined", desc: "Nombre de la carrera (estudiantes/profesores)" },
+          { name: "semestre", type: "number", req: "No", def: "undefined", desc: "Semestre actual (estudiantes)" },
+          { name: "materias", type: "string[]", req: "No", def: "[]", desc: "Nombres de materias que imparte (profesores)" }
+        ]
+      },
+      {
+        name: "SolicitudTutoria",
+        file: "src/models/SolicitudTutoria.ts",
+        icon: "cast_for_education",
+        fields: [
+          { name: "_id", type: "ObjectId", req: "Auto", def: "—", desc: "Identificador de la solicitud/sesión" },
+          { name: "estudiante", type: "ObjectId (ref: 'Usuario')", req: "Sí", def: "—", desc: "Estudiante solicitante principal" },
+          { name: "asistenciaEstudiante", type: "boolean | null", req: "No", def: "null", desc: "Asistencia del solicitante principal" },
+          { name: "participantes", type: "Array<{ estudiante: ObjectId, asistio: boolean | null }>", req: "No", def: "[]", desc: "Inscritos adicionales en sesión grupal" },
+          { name: "profesor", type: "ObjectId (ref: 'Usuario')", req: "No", def: "undefined", desc: "Profesor asignado" },
+          { name: "materia", type: "string", req: "Sí", def: "—", desc: "Nombre de la asignatura" },
+          { name: "tema", type: "string", req: "No", def: "undefined", desc: "Tema puntual de la tutoría" },
+          { name: "descripcion", type: "string", req: "Sí", def: "—", desc: "Motivo o consulta del estudiante" },
+          { name: "hora", type: "string", req: "No", def: "undefined", desc: "Franja horaria (ej: 'Lunes 08:00 - 10:00')" },
+          { name: "modalidad", type: "'presencial' | 'virtual'", req: "No", def: "'virtual'", desc: "Modalidad de la sesión" },
+          { name: "tipo", type: "'individual' | 'grupal'", req: "No", def: "'individual'", desc: "Tipo de cupo de la sesión" },
+          { name: "cupoMaximo", type: "number", req: "No", def: "10", desc: "Capacidad total si es grupal" },
+          { name: "comentarioProfesor", type: "string", req: "No", def: "''", desc: "Enlace de videollamada, salón o nota" },
+          { name: "enlaceGrabacion", type: "string", req: "No", def: "''", desc: "URL de grabación post-sesión" },
+          { name: "estado", type: "'pendiente'|'aceptada'|'cancelada'|'aplazada'|'finalizada'", req: "No", def: "'pendiente'", desc: "Estado actual del ciclo de vida" },
+          { name: "recursos", type: "string[]", req: "No", def: "[]", desc: "Enlaces de material de clase" },
+          { name: "fechaPropuesta", type: "Date", req: "No", def: "undefined", desc: "Campo opcional en esquema" }
+        ]
+      },
+      {
+        name: "HorarioDisponible",
+        file: "src/models/HorarioDisponible.ts",
+        icon: "schedule",
+        fields: [
+          { name: "_id", type: "ObjectId", req: "Auto", def: "—", desc: "Identificador del bloque horario" },
+          { name: "profesor", type: "ObjectId (ref: 'Usuario')", req: "Sí", def: "—", desc: "Docente propietario del horario" },
+          { name: "dia", type: "string", req: "Sí", def: "—", desc: "Día de la semana (ej: 'Lunes')" },
+          { name: "horaInicio", type: "string", req: "Sí", def: "—", desc: "Hora inicio 'HH:mm'" },
+          { name: "horaFin", type: "string", req: "Sí", def: "—", desc: "Hora fin 'HH:mm'" }
+        ]
+      },
+      {
+        name: "Recurso",
+        file: "src/models/Recurso.ts",
+        icon: "folder_open",
+        fields: [
+          { name: "_id", type: "ObjectId", req: "Auto", def: "—", desc: "Identificador del recurso" },
+          { name: "titulo", type: "string", req: "Sí", def: "—", desc: "Título del material" },
+          { name: "escuela", type: "string", req: "Sí", def: "'General'", desc: "Escuela a la que pertenece" },
+          { name: "materia", type: "string", req: "Sí", def: "—", desc: "Materia asociada" },
+          { name: "tema", type: "string", req: "No", def: "''", desc: "Tema específico" },
+          { name: "claseOrigen", type: "string", req: "No", def: "''", desc: "Referencia a clase finalizada" },
+          { name: "link", type: "string", req: "Sí", def: "—", desc: "URL del archivo o grabación" },
+          { name: "profesor", type: "ObjectId (ref: 'Usuario')", req: "Sí", def: "—", desc: "Docente que lo publicó" }
+        ]
+      },
+      {
+        name: "Escuela / Carrera / Materia / Tema",
+        file: "src/models/Escuela.ts • Carrera.ts • Materia.ts • Tema.ts",
+        icon: "account_tree",
+        fields: [
+          { name: "Escuela.nombre", type: "string", req: "Sí (Único)", def: "—", desc: "Nombre oficial de la Escuela" },
+          { name: "Escuela.codigo", type: "string", req: "Sí (Único)", def: "—", desc: "Código único (ej: 'ESC-ING')" },
+          { name: "Carrera.nombre", type: "string", req: "Sí", def: "—", desc: "Nombre del programa académico" },
+          { name: "Carrera.codigo", type: "string", req: "Sí (Único)", def: "—", desc: "Código único (ej: 'ING-SW')" },
+          { name: "Carrera.escuela", type: "ObjectId (ref: 'Escuela')", req: "Sí", def: "—", desc: "Relación con Escuela" },
+          { name: "Materia.nombre", type: "string", req: "Sí", def: "—", desc: "Nombre de la asignatura" },
+          { name: "Materia.codigo", type: "string", req: "Sí (Único)", def: "—", desc: "Código único (ej: 'MAT-101')" },
+          { name: "Materia.carrera", type: "ObjectId (ref: 'Carrera')", req: "Sí", def: "—", desc: "Relación con Carrera" },
+          { name: "Tema.nombre / materia", type: "string / ObjectId", req: "Sí", def: "—", desc: "Definido en modelo Tema.ts (sin rutas aún)" }
+        ]
+      }
+    ];
+
+    // ============================================================================
+    // HELPERS VISUALES
+    // ============================================================================
+    let filtroMetodoActual = "ALL";
+
+    function getMethodBadge(method) {
+      const styles = {
+        GET: "bg-primary-fixed text-primary border border-primary/20",
+        POST: "bg-[#dcfce7] text-[#166534] border border-[#16a34a]/20",
+        PUT: "bg-[#fef3c7] text-[#92400e] border border-tertiary/20",
+        PATCH: "bg-tertiary-fixed text-on-tertiary-fixed border border-tertiary/20",
+        DELETE: "bg-error-container text-on-error-container border border-error/20"
+      };
+      return `<span class="inline-flex items-center justify-center font-mono text-[11px] font-bold px-2.5 py-1 rounded-md min-w-[62px] text-center ${styles[method] || ''}">${method}</span>`;
+    }
+
+    function getAuthBadge(auth) {
+      if (auth === "Público") {
+        return `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#dcfce7] text-[#166534] font-label-md text-[11px] font-semibold"><span class="material-symbols-outlined text-[13px]">public</span>Público</span>`;
+      }
+      if (auth.includes("Admin")) {
+        return `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-error-container text-on-error-container font-label-md text-[11px] font-semibold"><span class="material-symbols-outlined text-[13px]">admin_panel_settings</span>JWT + Rol Admin</span>`;
+      }
+      return `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-md text-[11px] font-semibold"><span class="material-symbols-outlined text-[13px]">key</span>Bearer JWT</span>`;
+    }
+
+    // ============================================================================
+    // RENDERIZADO DE LA TABLA MAESTRA Y TARJETAS DE ENDPOINTS
+    // ============================================================================
+    function renderAll() {
+      const q = (document.getElementById("search-input").value || "").toLowerCase().trim();
+      const clearBtn = document.getElementById("clear-search-btn");
+      clearBtn.classList.toggle("hidden", !q);
+
+      const masterBody = document.getElementById("master-table-body");
+      const modulesContainer = document.getElementById("endpoints-modules-container");
+
+      let masterRowsHTML = "";
+      let modulesHTML = "";
+
+      API_MODULES.forEach((mod) => {
+        const filteredEndpoints = mod.endpoints.filter((ep) => {
+          const okMethod = filtroMetodoActual === "ALL" || ep.method === filtroMetodoActual;
+          if (!okMethod) return false;
+          if (!q) return true;
+          const haystack = [
+            ep.method,
+            ep.path,
+            ep.summary,
+            ep.description,
+            ep.auth,
+            JSON.stringify(ep.bodyFields),
+            JSON.stringify(ep.params),
+            JSON.stringify(ep.responseExample)
+          ].join(" ").toLowerCase();
+          return haystack.includes(q);
+        });
+
+        if (filteredEndpoints.length === 0) return;
+
+        // Filas para la tabla maestra
+        filteredEndpoints.forEach((ep) => {
+          masterRowsHTML += `
+            <tr onclick="document.getElementById('${ep.id}').scrollIntoView({behavior:'smooth'})" class="hover:bg-surface-container-low transition-colors cursor-pointer">
+              <td class="py-2.5 px-4">${getMethodBadge(ep.method)}</td>
+              <td class="py-2.5 px-4 font-mono font-semibold text-on-surface">${ep.path}</td>
+              <td class="py-2.5 px-4 text-on-surface-variant">${mod.title.replace(/\(.*\)/, '')}</td>
+              <td class="py-2.5 px-4">${getAuthBadge(ep.auth)}</td>
+              <td class="py-2.5 px-4 text-on-surface-variant">${ep.summary}</td>
+            </tr>
+          `;
+        });
+
+        // Tarjetas detalladas del módulo
+        const endpointsCardsHTML = filteredEndpoints.map((ep) => {
+          const hasParams = ep.params && ep.params.length > 0;
+          const hasBodyFields = ep.bodyFields && ep.bodyFields.length > 0;
+          const reqJsonStr = ep.requestExample !== null ? JSON.stringify(ep.requestExample, null, 2) : null;
+          const resJsonStr = JSON.stringify(ep.responseExample, null, 2);
+
+          return `
+            <article id="${ep.id}" class="bg-surface-container-lowest rounded-xl shadow-xs border border-surface-container overflow-hidden scroll-mt-24">
+              <!-- Cabecera del Endpoint -->
+              <div class="p-4 sm:p-space-md bg-surface-container-low/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-surface-container">
+                <div class="flex flex-wrap items-center gap-2.5 min-w-0">
+                  ${getMethodBadge(ep.method)}
+                  <code class="font-mono text-sm sm:text-base font-bold text-on-surface break-all">${ep.path}</code>
+                  <button onclick="copiarTexto('${ep.path}')" class="p-1.5 rounded-lg hover:bg-surface-container text-outline hover:text-primary transition-colors cursor-pointer" title="Copiar ruta">
+                    <span class="material-symbols-outlined text-[16px]">content_copy</span>
+                  </button>
+                </div>
+                <div class="flex flex-wrap items-center gap-2 shrink-0">
+                  ${getAuthBadge(ep.auth)}
+                  <span class="px-2.5 py-0.5 rounded-md bg-surface-container text-on-surface-variant font-mono text-[11px] font-semibold">
+                    ${ep.responseStatus}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Cuerpo del Endpoint -->
+              <div class="p-4 sm:p-space-lg space-y-4">
+                <div>
+                  <h4 class="font-label-md text-base font-bold text-on-surface">${ep.summary}</h4>
+                  <p class="text-xs sm:text-sm text-on-surface-variant mt-1 leading-relaxed">${ep.description}</p>
+                </div>
+
+                ${hasParams ? `
+                  <div class="space-y-2">
+                    <span class="font-label-md text-[11px] uppercase tracking-wider text-outline font-bold block">Parámetros de Ruta / Query</span>
+                    <div class="overflow-x-auto rounded-lg border border-surface-container">
+                      <table class="w-full text-left text-xs">
+                        <thead class="bg-surface-container-low text-outline font-label-md text-[11px] uppercase">
+                          <tr>
+                            <th class="py-2 px-3">Nombre</th>
+                            <th class="py-2 px-3">Ubicación</th>
+                            <th class="py-2 px-3">Tipo</th>
+                            <th class="py-2 px-3">Requerido</th>
+                            <th class="py-2 px-3">Descripción</th>
+                          </tr>
+                        </thead>
+                        <tbody class="divide-y divide-surface-container">
+                          ${ep.params.map(p => `
+                            <tr>
+                              <td class="py-2 px-3 font-mono font-semibold text-primary">${p.name}</td>
+                              <td class="py-2 px-3"><span class="px-2 py-0.5 rounded bg-surface-container font-mono text-[11px]">${p.in}</span></td>
+                              <td class="py-2 px-3 font-mono text-on-surface-variant">${p.type}</td>
+                              <td class="py-2 px-3">${p.required ? '<span class="text-error font-semibold">Sí</span>' : '<span class="text-outline">Opcional</span>'}</td>
+                              <td class="py-2 px-3 text-on-surface-variant">${p.desc}</td>
+                            </tr>
+                          `).join('')}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ` : ''}
+
+                ${hasBodyFields ? `
+                  <div class="space-y-2">
+                    <span class="font-label-md text-[11px] uppercase tracking-wider text-outline font-bold block">Datos que Recibe (Request Body JSON)</span>
+                    <div class="overflow-x-auto rounded-lg border border-surface-container">
+                      <table class="w-full text-left text-xs">
+                        <thead class="bg-surface-container-low text-outline font-label-md text-[11px] uppercase">
+                          <tr>
+                            <th class="py-2 px-3">Campo</th>
+                            <th class="py-2 px-3">Tipo / Formato</th>
+                            <th class="py-2 px-3">Requerido</th>
+                            <th class="py-2 px-3">Descripción / Reglas</th>
+                          </tr>
+                        </thead>
+                        <tbody class="divide-y divide-surface-container">
+                          ${ep.bodyFields.map(b => `
+                            <tr>
+                              <td class="py-2 px-3 font-mono font-semibold text-on-surface">${b.name}</td>
+                              <td class="py-2 px-3 font-mono text-primary text-[11px]">${b.type}</td>
+                              <td class="py-2 px-3">${b.required ? '<span class="px-2 py-0.5 rounded bg-error-container text-on-error-container font-semibold text-[11px]">Obligatorio</span>' : '<span class="text-outline text-[11px]">Opcional</span>'}</td>
+                              <td class="py-2 px-3 text-on-surface-variant">${b.desc}</td>
+                            </tr>
+                          `).join('')}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ` : ''}
+
+                <!-- Bloques Desplegables de JSON (Request & Response) -->
+                <details class="json-details group rounded-xl bg-surface-container-low overflow-hidden" open>
+                  <summary class="px-4 py-2.5 flex items-center justify-between cursor-pointer select-none font-label-md text-xs font-semibold text-on-surface hover:bg-surface-container transition-colors">
+                    <span class="flex items-center gap-2">
+                      <span class="material-symbols-outlined text-[18px] text-primary">data_object</span>
+                      <span>Ejemplos de Payload JSON (Entrada / Respuesta &amp; Errores)</span>
+                    </span>
+                    <span class="material-symbols-outlined text-[18px] text-outline group-open:rotate-180 transition-transform">expand_more</span>
+                  </summary>
+
+                  <div class="p-4 pt-2 grid grid-cols-1 ${reqJsonStr ? 'lg:grid-cols-2' : ''} gap-4 border-t border-surface-container">
+                    ${reqJsonStr ? `
+                      <div class="space-y-1.5 min-w-0">
+                        <div class="flex items-center justify-between">
+                          <span class="font-label-md text-[11px] uppercase tracking-wider text-outline font-semibold">Request Body (JSON)</span>
+                          <button onclick="copiarCodigo(this)" data-code="${encodeURIComponent(reqJsonStr)}" class="text-[11px] font-label-md text-primary hover:underline flex items-center gap-1 cursor-pointer">
+                            <span class="material-symbols-outlined text-[14px]">content_copy</span> Copiar JSON
+                          </button>
+                        </div>
+                        <pre class="p-3.5 rounded-xl bg-inverse-surface text-inverse-on-surface font-mono text-xs overflow-x-auto leading-relaxed"><code>${reqJsonStr}</code></pre>
+                      </div>
+                    ` : ''}
+
+                    <div class="space-y-1.5 min-w-0">
+                      <div class="flex items-center justify-between">
+                        <span class="font-label-md text-[11px] uppercase tracking-wider text-[#166534] font-semibold">Response (${ep.responseStatus})</span>
+                        <button onclick="copiarCodigo(this)" data-code="${encodeURIComponent(resJsonStr)}" class="text-[11px] font-label-md text-primary hover:underline flex items-center gap-1 cursor-pointer">
+                          <span class="material-symbols-outlined text-[14px]">content_copy</span> Copiar JSON
+                        </button>
+                      </div>
+                      <pre class="p-3.5 rounded-xl bg-inverse-surface text-[#a7f3d0] font-mono text-xs overflow-x-auto leading-relaxed"><code>${resJsonStr}</code></pre>
+                    </div>
+                  </div>
+
+                  ${ep.errors && ep.errors.length > 0 ? `
+                    <div class="px-4 pb-4">
+                      <div class="p-3 rounded-lg bg-surface-container-lowest space-y-1.5">
+                        <span class="font-label-md text-[11px] uppercase tracking-wider text-outline font-bold block">Posibles Códigos de Error</span>
+                        <div class="space-y-1">
+                          ${ep.errors.map(err => `
+                            <div class="flex flex-col sm:flex-row sm:items-center gap-2 text-xs">
+                              <span class="inline-flex items-center px-2 py-0.5 rounded bg-error-container text-on-error-container font-mono font-bold text-[11px] w-fit">${err.code}</span>
+                              <code class="font-mono text-[11px] text-on-surface-variant break-all">${err.msg}</code>
+                            </div>
+                          `).join('')}
+                        </div>
+                      </div>
+                    </div>
+                  ` : ''}
+                </details>
+              </div>
+            </article>
+          `;
+        }).join('');
+
+        modulesHTML += `
+          <section id="${mod.id}" class="space-y-space-md scroll-mt-20">
+            <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2 pb-2 border-b border-surface-container-highest">
+              <div>
+                <span class="font-label-md text-[11px] uppercase tracking-wider text-primary font-bold">${mod.code}</span>
+                <h2 class="text-xl sm:text-2xl font-bold text-on-surface flex items-center gap-2 mt-0.5">
+                  <span class="material-symbols-outlined text-primary text-[24px]">${mod.icon}</span>
+                  <span>${mod.title}</span>
+                </h2>
+                <p class="text-xs sm:text-sm text-on-surface-variant mt-1">${mod.subtitle}</p>
+              </div>
+              <span class="font-mono text-[11px] text-outline bg-surface-container-low px-2.5 py-1 rounded-lg shrink-0">${mod.fileRef}</span>
+            </div>
+            <div class="space-y-space-md">
+              ${endpointsCardsHTML}
+            </div>
+          </section>
+        `;
+      });
+
+      if (!masterRowsHTML) {
+        masterRowsHTML = `<tr><td colspan="5" class="py-8 text-center text-outline">No se encontraron endpoints que coincidan con la búsqueda.</td></tr>`;
+      }
+
+      masterBody.innerHTML = masterRowsHTML;
+      modulesContainer.innerHTML = modulesHTML;
+    }
+
+    function renderModels() {
+      const grid = document.getElementById("models-grid");
+      grid.innerHTML = MONGOOSE_MODELS.map((m) => `
+        <div class="bg-surface-container-lowest rounded-xl shadow-xs border border-surface-container overflow-hidden flex flex-col">
+          <div class="p-4 bg-surface-container-low flex items-center justify-between gap-2 border-b border-surface-container">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-lg bg-primary-fixed text-primary flex items-center justify-center">
+                <span class="material-symbols-outlined text-[18px]">${m.icon}</span>
+              </div>
+              <div>
+                <h3 class="font-label-md text-sm font-bold text-on-surface">${m.name}</h3>
+                <span class="font-mono text-[11px] text-outline block">${m.file}</span>
+              </div>
+            </div>
+          </div>
+          <div class="overflow-x-auto flex-1">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-surface-container-low/50 text-outline font-label-md text-[11px] uppercase">
+                <tr>
+                  <th class="py-2 px-3">Campo</th>
+                  <th class="py-2 px-3">Tipo</th>
+                  <th class="py-2 px-3">Req.</th>
+                  <th class="py-2 px-3">Default</th>
+                  <th class="py-2 px-3">Descripción</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-surface-container">
+                ${m.fields.map(f => `
+                  <tr class="hover:bg-surface-container-low/40">
+                    <td class="py-2 px-3 font-mono font-semibold text-on-surface">${f.name}</td>
+                    <td class="py-2 px-3 font-mono text-primary text-[11px]">${f.type}</td>
+                    <td class="py-2 px-3 font-label-md text-[11px]">${f.req}</td>
+                    <td class="py-2 px-3 font-mono text-outline text-[11px]">${f.def}</td>
+                    <td class="py-2 px-3 text-on-surface-variant">${f.desc}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ============================================================================
+    // INTERACCIONES (FILTROS, COPIAR, EXPANDIR/COLAPSAR, EXPORTAR)
+    // ============================================================================
+    function setFiltroMetodo(metodo) {
+      filtroMetodoActual = metodo;
+      document.querySelectorAll(".metodo-chip").forEach((btn) => {
+        if (btn.dataset.metodo === metodo) {
+          btn.className = "metodo-chip px-3 py-1.5 rounded-lg font-label-md text-xs font-semibold bg-primary text-on-primary shadow-xs transition-all cursor-pointer";
+        } else {
+          btn.className = "metodo-chip px-3 py-1.5 rounded-lg font-mono text-xs font-semibold bg-surface-container text-on-surface-variant hover:bg-surface-container-highest transition-all cursor-pointer";
+        }
+      });
+      renderAll();
+    }
+
+    function filtrarEndpoints() {
+      renderAll();
+    }
+
+    function limpiarBusqueda() {
+      document.getElementById("search-input").value = "";
+      renderAll();
+    }
+
+    function toggleAllDetails(openState) {
+      document.querySelectorAll(".json-details").forEach((el) => {
+        el.open = openState;
+      });
+    }
+
+    function mostrarToast(mensaje) {
+      const toast = document.getElementById("toast");
+      const text = document.getElementById("toast-text");
+      text.textContent = mensaje;
+      toast.classList.remove("hidden");
+      toast.classList.add("flex");
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(() => {
+        toast.classList.add("hidden");
+        toast.classList.remove("flex");
+      }, 2200);
+    }
+
+    function copiarTexto(texto) {
+      navigator.clipboard.writeText(texto);
+      mostrarToast(`Copiado: ${texto}`);
+    }
+
+    function copiarCodigo(btn) {
+      const raw = decodeURIComponent(btn.getAttribute("data-code") || "");
+      navigator.clipboard.writeText(raw);
+      mostrarToast("Payload JSON copiado al portapapeles");
+    }
+
+    function exportarEspecificacionJSON() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({
+        api: "Tutorías Pro REST API",
+        version: "2.4.0",
+        baseUrl: "http://localhost:5000/api",
+        modules: API_MODULES,
+        models: MONGOOSE_MODELS
+      }, null, 2));
+      const a = document.createElement("a");
+      a.setAttribute("href", dataStr);
+      a.setAttribute("download", "tutorias-pro-api-spec.json");
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      mostrarToast("Especificación JSON descargada");
+    }
+
+    function toggleMobileSidebar() {
+      const sb = document.getElementById("sidebar");
+      const bd = document.getElementById("sidebar-backdrop");
+      const isHidden = sb.classList.contains("-translate-x-full");
+      if (isHidden) {
+        sb.classList.remove("-translate-x-full");
+        bd.classList.remove("hidden");
+      } else {
+        sb.classList.add("-translate-x-full");
+        bd.classList.add("hidden");
+      }
+    }
+
+    function closeSidebarOnMobile() {
+      if (window.innerWidth < 1024) {
+        document.getElementById("sidebar").classList.add("-translate-x-full");
+        document.getElementById("sidebar-backdrop").classList.add("hidden");
+      }
+    }
+
+    // Inicializar al cargar
+    document.addEventListener("DOMContentLoaded", () => {
+      renderAll();
+      renderModels();
+    });
+  </script>
+</body>
+</html>
