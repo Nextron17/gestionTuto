@@ -141,14 +141,50 @@ async function seed() {
             { nombre: 'Valor Presente Neto (VPN) y TIR', materia: matMatFin._id },
             { nombre: 'Series de Tiempo ARIMA', materia: matEconFin._id },
         ]);
-        // 6. Usuarios (12): 1 Admin, 4 Profesores, 7 Estudiantes (contraseña común: 123456)
+        // 6. Usuarios (16): incluye las 4 cuentas Uniautónoma con contraseña común 12345678A!
         const passwordHash = await bcryptjs_1.default.hash('123456', 10);
-        const [adminUser, profCarlos, profMarcela, profAlejandro, profDiana, estLaura, estMateo, estSofia, estSantiago, estValeria, estDaniel, estCamila,] = await Usuario_1.default.insertMany([
+        const passwordUniautonomaHash = await bcryptjs_1.default.hash('12345678A!', 10);
+        const [adminUser, adminUniaut, profUniaut, estUno, estDos, profCarlos, profMarcela, profAlejandro, profDiana, estLaura, estMateo, estSofia, estSantiago, estValeria, estDaniel, estCamila,] = await Usuario_1.default.insertMany([
             {
                 nombre: 'Administrador General',
                 email: 'admin@universidad.edu',
                 passwordHash,
                 rol: 'admin',
+            },
+            {
+                nombre: 'Administrador Uniautónoma',
+                email: 'admin@uniautonoma.edu.co',
+                passwordHash: passwordUniautonomaHash,
+                rol: 'admin',
+                escuela: ecei.nombre,
+                carrera: carrSoft.nombre,
+            },
+            {
+                nombre: 'Dr. Andrés Felipe Muñoz',
+                email: 'profesor@uniautonoma.edu.co',
+                passwordHash: passwordUniautonomaHash,
+                rol: 'profesor',
+                escuela: ecei.nombre,
+                carrera: carrSoft.nombre,
+                materias: [matEda.nombre, matAsc.nombre, matBd.nombre],
+            },
+            {
+                nombre: 'Juan Camilo Pérez (Estudiante Uno)',
+                email: 'estudianteuno@uniautonoma.edu.co',
+                passwordHash: passwordUniautonomaHash,
+                rol: 'estudiante',
+                escuela: ecei.nombre,
+                carrera: carrSoft.nombre,
+                semestre: 4,
+            },
+            {
+                nombre: 'María Fernanda López (Estudiante Dos)',
+                email: 'estudiantedos@uniautonoma.edu.co',
+                passwordHash: passwordUniautonomaHash,
+                rol: 'estudiante',
+                escuela: ecei.nombre,
+                carrera: carrSoft.nombre,
+                semestre: 4,
             },
             {
                 nombre: 'Dr. Carlos Andrés Ruiz',
@@ -243,8 +279,53 @@ async function seed() {
                 semestre: 3,
             },
         ]);
-        // 7. Horarios Disponibles (10)
+        // 7. Horarios Disponibles (17) — incluye franjas libres y programadas para profesor@uniautonoma.edu.co
         const horarios = await HorarioDisponible_1.default.insertMany([
+            {
+                profesor: profUniaut._id,
+                nombreProfesor: profUniaut.nombre,
+                materia: matEda.nombre,
+                semestre: 4,
+                dia: 'Lunes',
+                horaInicio: '08:00',
+                horaFin: '10:00',
+            },
+            {
+                profesor: profUniaut._id,
+                nombreProfesor: profUniaut.nombre,
+                materia: matEda.nombre,
+                semestre: 4,
+                dia: 'Martes',
+                horaInicio: '10:00',
+                horaFin: '12:00',
+            },
+            {
+                profesor: profUniaut._id,
+                nombreProfesor: profUniaut.nombre,
+                materia: matAsc.nombre,
+                semestre: 6,
+                dia: 'Miércoles',
+                horaInicio: '14:00',
+                horaFin: '16:00',
+            },
+            {
+                profesor: profUniaut._id,
+                nombreProfesor: profUniaut.nombre,
+                materia: matBd.nombre,
+                semestre: 4,
+                dia: 'Jueves',
+                horaInicio: '08:00',
+                horaFin: '10:00',
+            },
+            {
+                profesor: profUniaut._id,
+                nombreProfesor: profUniaut.nombre,
+                materia: matAsc.nombre,
+                semestre: 6,
+                dia: 'Viernes',
+                horaInicio: '10:00',
+                horaFin: '12:00',
+            },
             {
                 profesor: profCarlos._id,
                 nombreProfesor: profCarlos.nombre,
@@ -354,8 +435,159 @@ async function seed() {
                 horaFin: '12:00',
             },
         ]);
-        // 8. Solicitudes de Tutoría (15) — cubre todos los estados, tipos y alimenta HU-22
+        // 8. Solicitudes de Tutoría (24) — incluye flujo completo Uniautónoma + cubre todos los estados y HU-22
         const solicitudes = await SolicitudTutoria_1.default.insertMany([
+            {
+                estudiante: estUno._id,
+                profesor: profUniaut._id,
+                materia: matEda.nombre,
+                tema: 'Árboles Balanceados (AVL y Red-Black)',
+                descripcion: 'Repaso completo de rotaciones simples y dobles antes del segundo parcial.',
+                hora: 'Lunes 08:00 - 10:00',
+                modalidad: 'virtual',
+                tipo: 'grupal',
+                cupoMaximo: 8,
+                participantes: [{ estudiante: estDos._id, asistio: null }],
+                enlaceReunion: 'https://meet.google.com/uniaut-avl-grupal',
+                comentarioProfesor: 'Traer el taller de inserción en AVL para resolver dudas en vivo.',
+                fechaRespuestaProfesor: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+                estado: 'aceptada',
+                recursos: ['https://visualgo.net/en/bst'],
+                fechaPropuesta: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
+            },
+            {
+                estudiante: estUno._id,
+                profesor: profUniaut._id,
+                materia: matAsc.nombre,
+                tema: 'Despliegue de Microservicios y REST API',
+                descripcion: 'Configuración de variables de entorno y despliegue conectado a MongoDB Atlas.',
+                hora: 'Viernes 10:00 - 12:00',
+                modalidad: 'virtual',
+                tipo: 'grupal',
+                cupoMaximo: 6,
+                participantes: [],
+                enlaceReunion: 'https://meet.google.com/uniaut-cloud-taller',
+                comentarioProfesor: 'Cupos abiertos para estudiantes de Ingeniería de Software.',
+                fechaRespuestaProfesor: new Date(Date.now() - 12 * 60 * 60 * 1000),
+                estado: 'aceptada',
+                recursos: ['https://expressjs.com/en/guide/routing.html'],
+                fechaPropuesta: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000),
+            },
+            {
+                estudiante: estLaura._id,
+                profesor: profUniaut._id,
+                materia: matEda.nombre,
+                tema: 'Grafos y Camino Más Corto (Dijkstra)',
+                descripcion: 'Implementación paso a paso de listas de adyacencia y colas de prioridad.',
+                hora: 'Sábado 10:00 - 12:00',
+                modalidad: 'virtual',
+                tipo: 'grupal',
+                cupoMaximo: 5,
+                participantes: [{ estudiante: estDos._id, asistio: null }],
+                enlaceReunion: 'https://meet.google.com/uniaut-dijkstra',
+                comentarioProfesor: 'Sesión colaborativa sobre caminos mínimos en grafos ponderados.',
+                fechaRespuestaProfesor: new Date(Date.now() - 6 * 60 * 60 * 1000),
+                estado: 'aceptada',
+                recursos: ['https://visualgo.net/en/sssp'],
+                fechaPropuesta: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+            },
+            {
+                estudiante: estUno._id,
+                profesor: profUniaut._id,
+                materia: matEda.nombre,
+                tema: 'Complejidad Algorítmica y Recursividad',
+                descripcion: 'Solicito asesoría sobre cálculo de complejidad temporal en árboles recursivos.',
+                hora: 'Martes 10:00 - 12:00',
+                modalidad: 'virtual',
+                tipo: 'individual',
+                estado: 'pendiente',
+                recursos: [],
+                fechaPropuesta: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+            },
+            {
+                estudiante: estDos._id,
+                profesor: profUniaut._id,
+                materia: matBd.nombre,
+                tema: 'Agregaciones en MongoDB ($lookup y $facet)',
+                descripcion: 'Necesito ayuda con consultas cruzadas usando $lookup y $unwind en Mongoose.',
+                hora: 'Jueves 08:00 - 10:00',
+                modalidad: 'presencial',
+                tipo: 'individual',
+                estado: 'pendiente',
+                recursos: [],
+                fechaPropuesta: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000),
+            },
+            {
+                estudiante: estDos._id,
+                profesor: profUniaut._id,
+                materia: matAsc.nombre,
+                tema: 'Patrones de Arquitectura Hexagonal',
+                descripcion: 'Dudas sobre separación de dominio, puertos y adaptadores en Express.',
+                hora: 'Miércoles 14:00 - 16:00',
+                modalidad: 'virtual',
+                tipo: 'individual',
+                comentarioProfesor: 'Reprogramada para confirmar disponibilidad del laboratorio cloud.',
+                fechaRespuestaProfesor: new Date(Date.now() - 8 * 60 * 60 * 1000),
+                estado: 'aplazada',
+                recursos: [],
+                fechaPropuesta: new Date(Date.now() + 6 * 24 * 60 * 60 * 1000),
+            },
+            {
+                estudiante: estDos._id,
+                profesor: profUniaut._id,
+                materia: matEda.nombre,
+                tema: 'Grafos y Camino Más Corto (Dijkstra)',
+                descripcion: 'Revisión individual de código en TypeScript para el algoritmo de Dijkstra.',
+                hora: 'Viernes 14:00 - 16:00',
+                modalidad: 'presencial',
+                tipo: 'individual',
+                cupoMaximo: 1,
+                lugar: 'Sala de Sistemas 301 - Sede Uniautónoma',
+                comentarioProfesor: 'Traer portátil con el repositorio del taller listo.',
+                fechaRespuestaProfesor: new Date(Date.now() - 10 * 60 * 60 * 1000),
+                estado: 'aceptada',
+                recursos: [],
+                fechaPropuesta: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
+            },
+            {
+                estudiante: estUno._id,
+                profesor: profUniaut._id,
+                materia: matBd.nombre,
+                tema: 'Agregaciones en MongoDB ($lookup y $facet)',
+                descripcion: 'Sesión práctica de agregaciones analíticas sobre colecciones universitarias.',
+                hora: 'Jueves 08:00 - 10:00',
+                modalidad: 'virtual',
+                tipo: 'grupal',
+                cupoMaximo: 8,
+                asistenciaEstudiante: true,
+                participantes: [{ estudiante: estDos._id, asistio: true }],
+                enlaceReunion: 'https://meet.google.com/uniaut-mongo-finalizada',
+                enlaceGrabacion: 'https://meet.universidad.edu/rec/uniaut-mongodb-clase01',
+                comentarioProfesor: 'Ambos estudiantes completaron el pipeline de reportes sin errores.',
+                fechaRespuestaProfesor: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
+                estado: 'finalizada',
+                recursos: ['https://www.mongodb.com/docs/manual/aggregation/'],
+                fechaPropuesta: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
+            },
+            {
+                estudiante: estUno._id,
+                profesor: profUniaut._id,
+                materia: matAsc.nombre,
+                tema: 'Despliegue de Microservicios y REST API',
+                descripcion: 'Revisión de arquitectura REST, middlewares JWT y manejo de errores.',
+                hora: 'Martes 10:00 - 12:00',
+                modalidad: 'virtual',
+                tipo: 'individual',
+                cupoMaximo: 1,
+                asistenciaEstudiante: false,
+                enlaceReunion: 'https://meet.google.com/uniaut-cloud-clase02',
+                enlaceGrabacion: 'https://meet.universidad.edu/rec/uniaut-cloud-clase02',
+                comentarioProfesor: 'Se deja disponible la grabación de repaso con ejemplos de JWT.',
+                fechaRespuestaProfesor: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000),
+                estado: 'finalizada',
+                recursos: ['https://expressjs.com/en/guide/routing.html'],
+                fechaPropuesta: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000),
+            },
             {
                 estudiante: estLaura._id,
                 profesor: profCarlos._id,
@@ -597,8 +829,58 @@ async function seed() {
                 fechaPropuesta: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
             },
         ]);
-        // 9. Recursos Académicos (8) — mezcla de clases finalizadas y publicaciones directas
+        // 9. Recursos Académicos (13) — incluye recursos compartidos por profesor@uniautonoma.edu.co
         const recursos = await Recurso_1.default.insertMany([
+            {
+                titulo: 'Clase: Bases de Datos NoSQL - Agregaciones en MongoDB ($lookup y $facet) (Grabación Uniautónoma)',
+                escuela: ecei.nombre,
+                materia: matBd.nombre,
+                tema: 'Agregaciones en MongoDB ($lookup y $facet)',
+                tipo: 'video',
+                claseOrigen: 'Clase: Bases de Datos NoSQL y Relacionales - Agregaciones en MongoDB ($lookup y $facet)',
+                link: 'https://meet.universidad.edu/rec/uniaut-mongodb-clase01',
+                profesor: profUniaut._id,
+            },
+            {
+                titulo: 'Clase: Arquitectura de Software y Cloud - Microservicios, JWT y REST API (Grabación Uniautónoma)',
+                escuela: ecei.nombre,
+                materia: matAsc.nombre,
+                tema: 'Despliegue de Microservicios y REST API',
+                tipo: 'video',
+                claseOrigen: 'Clase: Arquitectura de Software y Cloud - Despliegue de Microservicios y REST API',
+                link: 'https://meet.universidad.edu/rec/uniaut-cloud-clase02',
+                profesor: profUniaut._id,
+            },
+            {
+                titulo: 'Guía Práctica de Rotaciones AVL y Balanceo de Árboles',
+                escuela: ecei.nombre,
+                materia: matEda.nombre,
+                tema: 'Árboles Balanceados (AVL y Red-Black)',
+                tipo: 'guia',
+                claseOrigen: '',
+                link: 'https://visualgo.net/en/bst',
+                profesor: profUniaut._id,
+            },
+            {
+                titulo: 'Documento Base de Arquitectura Hexagonal en Node.js y TypeScript',
+                escuela: ecei.nombre,
+                materia: matAsc.nombre,
+                tema: 'Patrones de Arquitectura Hexagonal',
+                tipo: 'documento',
+                claseOrigen: '',
+                link: 'https://netflixtechblog.com/ready-for-changes-with-hexagonal-architecture-b315ec967749',
+                profesor: profUniaut._id,
+            },
+            {
+                titulo: 'Simulador Interactivo de Grafos y Algoritmo de Dijkstra',
+                escuela: ecei.nombre,
+                materia: matEda.nombre,
+                tema: 'Grafos y Camino Más Corto (Dijkstra)',
+                tipo: 'enlace',
+                claseOrigen: '',
+                link: 'https://visualgo.net/en/sssp',
+                profesor: profUniaut._id,
+            },
             {
                 titulo: 'Clase: Bases de Datos NoSQL y Relacionales - Agregaciones en MongoDB ($lookup y $facet) (Grabación de sesión)',
                 escuela: ecei.nombre,
@@ -685,11 +967,16 @@ async function seed() {
         console.log(`- Carreras insertadas:             6`);
         console.log(`- Materias insertadas:             10`);
         console.log(`- Temas insertados:                ${temas.length}`);
-        console.log(`- Usuarios insertados:             12 (1 admin, 4 profesores, 7 estudiantes)`);
+        console.log(`- Usuarios insertados:             16 (2 admin, 5 profesores, 9 estudiantes)`);
         console.log(`- Horarios disponibles insertados: ${horarios.length}`);
         console.log(`- Solicitudes de tutoría:          ${solicitudes.length}`);
         console.log(`- Recursos académicos:             ${recursos.length}`);
-        console.log('\nCredenciales de prueba (contraseña para todos: 123456):');
+        console.log('\nCredenciales principales Uniautónoma (contraseña para todos: 12345678A!):');
+        console.log(`  [Admin]      ${adminUniaut.email} (${adminUniaut.carrera})`);
+        console.log(`  [Profesor]   ${profUniaut.email} (${profUniaut.carrera})`);
+        console.log(`  [Estudiante] ${estUno.email} (${estUno.carrera}, Sem. ${estUno.semestre})`);
+        console.log(`  [Estudiante] ${estDos.email} (${estDos.carrera}, Sem. ${estDos.semestre})`);
+        console.log('\nCredenciales adicionales (contraseña: 123456):');
         console.log(`  [Admin]      ${adminUser.email}`);
         console.log(`  [Profesor]   ${profCarlos.email} (${profCarlos.carrera})`);
         console.log(`  [Profesor]   ${profMarcela.email} (${profMarcela.carrera})`);
