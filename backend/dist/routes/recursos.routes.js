@@ -8,4 +8,6 @@ router.use(auth_middleware_1.verificarToken);
 router.get('/escuelas', recursos_controller_1.obtenerEscuelasRecursos);
 router.get('/', recursos_controller_1.obtenerRecursos);
 router.post('/', recursos_controller_1.crearRecurso);
+router.put('/:id', recursos_controller_1.actualizarRecursoProfesor);
+router.delete('/:id', recursos_controller_1.eliminarRecursoProfesor);
 exports.default = router;

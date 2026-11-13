@@ -10,6 +10,7 @@ export interface User {
   rol: 'estudiante' | 'profesor' | 'admin';
   carrera?: string;
   escuela?: string;
+  materias?: string[];
 }
 
 interface AuthContextType {

@@ -18,10 +18,16 @@ export interface ISolicitudTutoria extends Document {
   tipo: 'individual' | 'grupal';
   cupoMaximo: number;
   comentarioProfesor?: string;
+  motivoCancelacion?: string;
+  canceladaPor?: 'estudiante' | 'profesor';
+  fechaCancelacion?: Date;
+  lugar?: string;
+  enlaceReunion?: string;
   enlaceGrabacion?: string;
   estado: 'pendiente' | 'aceptada' | 'cancelada' | 'aplazada' | 'finalizada';
   recursos: string[];
   fechaPropuesta?: Date;
+  fechaRespuestaProfesor?: Date;
 }
 
 const SolicitudTutoriaSchema: Schema = new Schema(
@@ -51,6 +57,11 @@ const SolicitudTutoriaSchema: Schema = new Schema(
     },
     cupoMaximo: { type: Number, default: 10 },
     comentarioProfesor: { type: String, default: '' },
+    motivoCancelacion: { type: String, default: '' },
+    canceladaPor: { type: String, enum: ['estudiante', 'profesor'] },
+    fechaCancelacion: { type: Date },
+    lugar: { type: String, default: '' },
+    enlaceReunion: { type: String, default: '' },
     enlaceGrabacion: { type: String, default: '' },
     estado: {
       type: String,
@@ -59,6 +70,7 @@ const SolicitudTutoriaSchema: Schema = new Schema(
     },
     recursos: [{ type: String }],
     fechaPropuesta: { type: Date },
+    fechaRespuestaProfesor: { type: Date },
   },
   { timestamps: true }
 );

@@ -27,6 +27,7 @@ interface RecursoItem {
   escuela: string;
   materia: string;
   tema?: string;
+  tipo?: 'video' | 'guia' | 'documento' | 'enlace';
   claseOrigen?: string;
   link: string;
   profesor?: ProfesorInfo;
@@ -77,6 +78,7 @@ export default function AdminRecursosPage() {
   const [escuelaForm, setEscuelaForm] = useState('');
   const [materiaForm, setMateriaForm] = useState('');
   const [temaForm, setTemaForm] = useState('');
+  const [tipoForm, setTipoForm] = useState<'video' | 'guia' | 'documento' | 'enlace'>('enlace');
   const [claseOrigenForm, setClaseOrigenForm] = useState('');
   const [linkForm, setLinkForm] = useState('');
   const [guardando, setGuardando] = useState(false);
@@ -118,6 +120,7 @@ export default function AdminRecursosPage() {
     setEscuelaForm(recurso.escuela || 'General');
     setMateriaForm(recurso.materia || '');
     setTemaForm(recurso.tema || '');
+    setTipoForm(recurso.tipo || 'enlace');
     setClaseOrigenForm(recurso.claseOrigen || '');
     setLinkForm(recurso.link || '');
     setErrorForm('');
@@ -135,6 +138,7 @@ export default function AdminRecursosPage() {
         escuela: escuelaForm,
         materia: materiaForm,
         tema: temaForm,
+        tipo: tipoForm,
         claseOrigen: claseOrigenForm,
         link: linkForm,
       });
@@ -361,6 +365,9 @@ export default function AdminRecursosPage() {
                   className="p-4 space-y-3 hover:bg-surface-container-low/60 transition-colors"
                 >
                   <div className="flex flex-wrap items-center gap-1.5">
+                    <Badge variant="neutral" pill={false} className="capitalize">
+                      {r.tipo || 'enlace'}
+                    </Badge>
                     <Badge variant="primary" pill={false}>
                       {r.escuela || 'General'}
                     </Badge>
@@ -484,6 +491,9 @@ export default function AdminRecursosPage() {
                       <td className="py-3.5 px-space-md">
                         <div className="space-y-1.5">
                           <div className="flex flex-wrap items-center gap-1.5">
+                            <Badge variant="neutral" pill={false} className="capitalize">
+                              {r.tipo || 'enlace'}
+                            </Badge>
                             <Badge variant="primary" pill={false}>
                               {r.escuela || 'General'}
                             </Badge>
@@ -658,15 +668,30 @@ export default function AdminRecursosPage() {
               placeholder="Ej: Integrales Múltiples"
             />
 
-            <FormInput
-              id="edit-recurso-origen"
-              label="Etiqueta de Origen (Opcional)"
-              icon="label"
-              value={claseOrigenForm}
-              onChange={(e) => setClaseOrigenForm(e.target.value)}
-              placeholder="Ej: Clase: Cálculo - Integrales"
-            />
+            <FormSelect
+              id="edit-recurso-tipo"
+              label="Tipo de Recurso"
+              icon="category"
+              value={tipoForm}
+              onChange={(e) =>
+                setTipoForm(e.target.value as 'video' | 'guia' | 'documento' | 'enlace')
+              }
+            >
+              <option value="video">Video</option>
+              <option value="guia">Guía</option>
+              <option value="documento">Documento</option>
+              <option value="enlace">Enlace</option>
+            </FormSelect>
           </div>
+
+          <FormInput
+            id="edit-recurso-origen"
+            label="Etiqueta de Origen (Opcional)"
+            icon="label"
+            value={claseOrigenForm}
+            onChange={(e) => setClaseOrigenForm(e.target.value)}
+            placeholder="Ej: Clase: Cálculo - Integrales"
+          />
 
           <div className="space-y-1.5">
             <FormInput

@@ -36,6 +36,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importStar(require("mongoose"));
 const HorarioDisponibleSchema = new mongoose_1.Schema({
     profesor: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Usuario', required: true },
+    nombreProfesor: { type: String, required: true, trim: true },
+    materia: { type: String, required: true, trim: true },
+    semestre: { type: Number, required: true, min: 1, max: 12 },
     dia: { type: String, required: true },
     horaInicio: { type: String, required: true },
     horaFin: { type: String, required: true },

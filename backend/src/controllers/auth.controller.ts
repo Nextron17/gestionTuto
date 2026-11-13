@@ -68,6 +68,7 @@ export const login = async (req: Request, res: Response) => {
         rol: usuario.rol,
         carrera: usuario.carrera,
         escuela: usuario.escuela,
+        materias: usuario.materias || [],
       },
     });
   } catch (error) {

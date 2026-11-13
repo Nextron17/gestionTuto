@@ -527,7 +527,7 @@ exports.obtenerRecursosAdmin = obtenerRecursosAdmin;
 const actualizarRecursoAdmin = async (req, res) => {
     try {
         const { id } = req.params;
-        const { titulo, escuela, materia, tema, claseOrigen, link } = req.body;
+        const { titulo, escuela, materia, tema, tipo, claseOrigen, link } = req.body;
         if (!titulo || !String(titulo).trim() || !materia || !String(materia).trim() || !link || !String(link).trim()) {
             return res.status(400).json({
                 message: 'El título, la materia y el enlace del recurso son obligatorios',
@@ -536,6 +536,19 @@ const actualizarRecursoAdmin = async (req, res) => {
         const recursoExistente = await Recurso_1.default.findById(id);
         if (!recursoExistente) {
             return res.status(404).json({ message: 'Recurso no encontrado' });
+        }
+        if (tipo !== undefined) {
+            const tipoLimpio = String(tipo)
+                .trim()
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '');
+            if (!['video', 'guia', 'documento', 'enlace'].includes(tipoLimpio)) {
+                return res.status(400).json({
+                    message: 'Tipo de recurso no válido. Usa video, guia, documento o enlace',
+                });
+            }
+            recursoExistente.tipo = tipoLimpio;
         }
         recursoExistente.titulo = String(titulo).trim();
         recursoExistente.escuela =

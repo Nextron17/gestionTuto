@@ -1,10 +1,13 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
+export type TipoRecurso = 'video' | 'guia' | 'documento' | 'enlace';
+
 export interface IRecurso extends Document {
   titulo: string;
   escuela: string;
   materia: string;
   tema?: string;
+  tipo: TipoRecurso;
   claseOrigen?: string;
   link: string;
   profesor: mongoose.Types.ObjectId;
@@ -16,6 +19,11 @@ const RecursoSchema = new Schema(
     escuela: { type: String, required: true, default: 'General' },
     materia: { type: String, required: true },
     tema: { type: String, default: '' },
+    tipo: {
+      type: String,
+      enum: ['video', 'guia', 'documento', 'enlace'],
+      default: 'enlace',
+    },
     claseOrigen: { type: String, default: '' },
     link: { type: String, required: true },
     profesor: { type: Schema.Types.ObjectId, ref: 'Usuario', required: true },

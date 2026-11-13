@@ -59,6 +59,7 @@ const login = async (req, res) => {
                 rol: usuario.rol,
                 carrera: usuario.carrera,
                 escuela: usuario.escuela,
+                materias: usuario.materias || [],
             },
         });
     }

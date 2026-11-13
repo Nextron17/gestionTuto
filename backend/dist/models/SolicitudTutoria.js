@@ -60,6 +60,11 @@ const SolicitudTutoriaSchema = new mongoose_1.Schema({
     },
     cupoMaximo: { type: Number, default: 10 },
     comentarioProfesor: { type: String, default: '' },
+    motivoCancelacion: { type: String, default: '' },
+    canceladaPor: { type: String, enum: ['estudiante', 'profesor'] },
+    fechaCancelacion: { type: Date },
+    lugar: { type: String, default: '' },
+    enlaceReunion: { type: String, default: '' },
     enlaceGrabacion: { type: String, default: '' },
     estado: {
         type: String,
@@ -68,5 +73,6 @@ const SolicitudTutoriaSchema = new mongoose_1.Schema({
     },
     recursos: [{ type: String }],
     fechaPropuesta: { type: Date },
+    fechaRespuestaProfesor: { type: Date },
 }, { timestamps: true });
 exports.default = mongoose_1.default.model('SolicitudTutoria', SolicitudTutoriaSchema);

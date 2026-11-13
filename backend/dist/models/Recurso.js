@@ -39,6 +39,11 @@ const RecursoSchema = new mongoose_1.Schema({
     escuela: { type: String, required: true, default: 'General' },
     materia: { type: String, required: true },
     tema: { type: String, default: '' },
+    tipo: {
+        type: String,
+        enum: ['video', 'guia', 'documento', 'enlace'],
+        default: 'enlace',
+    },
     claseOrigen: { type: String, default: '' },
     link: { type: String, required: true },
     profesor: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Usuario', required: true },

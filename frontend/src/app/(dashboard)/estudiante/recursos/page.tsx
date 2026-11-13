@@ -1,12 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import api from '../../../../lib/api';
 import { Icon } from '../../../../components/ui/Icon';
 import { PageHeader } from '../../../../components/ui/PageHeader';
 import { SearchInput } from '../../../../components/ui/SearchInput';
+import { FormSelect } from '../../../../components/ui/FormField';
 import { SurfaceCard } from '../../../../components/ui/SurfaceCard';
 import { Badge } from '../../../../components/ui/Badge';
+
+type TipoRecurso = 'video' | 'guia' | 'documento' | 'enlace';
 
 interface EscuelaItem {
   _id: string;
@@ -20,6 +23,7 @@ interface Recurso {
   escuela: string;
   materia: string;
   tema?: string;
+  tipo?: TipoRecurso;
   claseOrigen?: string;
   link: string;
   profesor?: {
@@ -27,11 +31,28 @@ interface Recurso {
   };
 }
 
+const TIPOS_META: Record<
+  TipoRecurso,
+  { label: string; icon: string; badgeVariant: 'primary' | 'secondary' | 'neutral' | 'success' }
+> = {
+  video: { label: 'Video', icon: 'play_circle', badgeVariant: 'primary' },
+  guia: { label: 'Guía', icon: 'menu_book', badgeVariant: 'success' },
+  documento: { label: 'Documento', icon: 'description', badgeVariant: 'secondary' },
+  enlace: { label: 'Enlace', icon: 'link', badgeVariant: 'neutral' },
+};
+
+function getTipoMeta(tipo?: string) {
+  return TIPOS_META[(tipo as TipoRecurso) || 'enlace'] || TIPOS_META.enlace;
+}
+
 export default function RecursosEstudiantePage() {
   const [recursos, setRecursos] = useState<Recurso[]>([]);
   const [escuelas, setEscuelas] = useState<EscuelaItem[]>([]);
   const [miEscuela, setMiEscuela] = useState<string>('');
   const [escuelaSeleccionada, setEscuelaSeleccionada] = useState<string>('todas');
+  const [materiaFiltro, setMateriaFiltro] = useState<string>('todas');
+  const [temaFiltro, setTemaFiltro] = useState<string>('todos');
+  const [tipoFiltro, setTipoFiltro] = useState<string>('todos');
   const [busqueda, setBusqueda] = useState('');
   const [cargando, setCargando] = useState(true);
 
@@ -76,16 +97,41 @@ export default function RecursosEstudiantePage() {
 
   const seleccionarEscuela = async (nombreEscuela: string) => {
     setEscuelaSeleccionada(nombreEscuela);
+    setMateriaFiltro('todas');
+    setTemaFiltro('todos');
     await cargarRecursos(nombreEscuela);
   };
 
-  const filtrados = recursos.filter(
-    (r) =>
-      r.titulo.toLowerCase().includes(busqueda.toLowerCase()) ||
-      r.materia.toLowerCase().includes(busqueda.toLowerCase()) ||
-      (r.tema && r.tema.toLowerCase().includes(busqueda.toLowerCase())) ||
-      (r.claseOrigen && r.claseOrigen.toLowerCase().includes(busqueda.toLowerCase()))
-  );
+  const materiasDisponibles = useMemo(() => {
+    return Array.from(new Set(recursos.map((r) => r.materia).filter(Boolean))).sort((a, b) =>
+      a.localeCompare(b)
+    );
+  }, [recursos]);
+
+  const temasDisponibles = useMemo(() => {
+    return Array.from(
+      new Set(
+        recursos
+          .filter((r) => materiaFiltro === 'todas' || r.materia === materiaFiltro)
+          .map((r) => r.tema)
+          .filter((tm): tm is string => Boolean(tm && tm.trim() !== ''))
+      )
+    ).sort((a, b) => a.localeCompare(b));
+  }, [recursos, materiaFiltro]);
+
+  const filtrados = recursos.filter((r) => {
+    const okMat = materiaFiltro === 'todas' || r.materia === materiaFiltro;
+    const okTema = temaFiltro === 'todos' || (r.tema || '') === temaFiltro;
+    const okTipo = tipoFiltro === 'todos' || (r.tipo || 'enlace') === tipoFiltro;
+    const q = busqueda.toLowerCase().trim();
+    const okBusqueda =
+      !q ||
+      r.titulo.toLowerCase().includes(q) ||
+      r.materia.toLowerCase().includes(q) ||
+      (r.tema && r.tema.toLowerCase().includes(q)) ||
+      (r.claseOrigen && r.claseOrigen.toLowerCase().includes(q));
+    return okMat && okTema && okTipo && okBusqueda;
+  });
 
   if (cargando) {
     return (
@@ -156,6 +202,55 @@ export default function RecursosEstudiantePage() {
             </button>
           ))}
         </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-surface-container">
+          <FormSelect
+            id="est-filtro-materia"
+            label="Materia"
+            icon="menu_book"
+            value={materiaFiltro}
+            onChange={(e) => {
+              setMateriaFiltro(e.target.value);
+              setTemaFiltro('todos');
+            }}
+          >
+            <option value="todas">Todas las materias</option>
+            {materiasDisponibles.map((m) => (
+              <option key={m} value={m}>
+                {m}
+              </option>
+            ))}
+          </FormSelect>
+
+          <FormSelect
+            id="est-filtro-tema"
+            label="Tema"
+            icon="topic"
+            value={temaFiltro}
+            onChange={(e) => setTemaFiltro(e.target.value)}
+          >
+            <option value="todos">Todos los temas</option>
+            {temasDisponibles.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+          </FormSelect>
+
+          <FormSelect
+            id="est-filtro-tipo"
+            label="Tipo de Recurso"
+            icon="category"
+            value={tipoFiltro}
+            onChange={(e) => setTipoFiltro(e.target.value)}
+          >
+            <option value="todos">Todos los tipos</option>
+            <option value="video">Video</option>
+            <option value="guia">Guía</option>
+            <option value="documento">Documento</option>
+            <option value="enlace">Enlace</option>
+          </FormSelect>
+        </div>
       </SurfaceCard>
 
       {/* Listado de Recursos */}
@@ -183,7 +278,9 @@ export default function RecursosEstudiantePage() {
           </SurfaceCard>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-space-md">
-            {filtrados.map((r) => (
+            {filtrados.map((r) => {
+              const meta = getTipoMeta(r.tipo);
+              return (
               <SurfaceCard
                 key={r._id}
                 as="article"
@@ -194,6 +291,10 @@ export default function RecursosEstudiantePage() {
                 <div className="p-4 sm:p-space-md space-y-2.5 min-w-0">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex flex-wrap items-center gap-1.5 min-w-0">
+                      <Badge variant={meta.badgeVariant} pill={false}>
+                        <Icon className="text-[13px]">{meta.icon}</Icon>
+                        <span>{meta.label}</span>
+                      </Badge>
                       <Badge variant="primary" pill={false}>
                         {r.escuela || 'General'}
                       </Badge>
@@ -204,7 +305,7 @@ export default function RecursosEstudiantePage() {
                       )}
                     </div>
                     <div className="w-9 h-9 rounded-lg bg-surface-container-low flex items-center justify-center text-primary shrink-0">
-                      <Icon className="text-[20px]">folder</Icon>
+                      <Icon className="text-[20px]">{meta.icon}</Icon>
                     </div>
                   </div>
 
@@ -244,12 +345,13 @@ export default function RecursosEstudiantePage() {
                     rel="noreferrer"
                     className="inline-flex items-center justify-center gap-1.5 bg-primary hover:bg-primary-container text-on-primary font-label-md text-xs px-3.5 py-2 rounded-lg font-semibold shadow-sm active:scale-[0.98] transition-all shrink-0"
                   >
-                    <Icon className="text-[16px]">download</Icon>
+                    <Icon className="text-[16px]">open_in_new</Icon>
                     <span>Abrir Recurso</span>
                   </a>
                 </div>
               </SurfaceCard>
-            ))}
+              );
+            })}
           </div>
         )}
       </section>
