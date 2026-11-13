@@ -205,13 +205,13 @@ function BuscarTutoriasContent() {
 
   const materiasDisponiblesModal = modalSolicitud
     ? Array.from(
-      new Set([
-        ...(modalSolicitud.profesor.materias || []),
-        ...modalSolicitud.profesor.horarios
-          .map((h) => h.materia || '')
-          .filter(Boolean),
-      ])
-    )
+        new Set([
+          ...(modalSolicitud.profesor.materias || []),
+          ...modalSolicitud.profesor.horarios
+            .map((h) => h.materia || '')
+            .filter(Boolean),
+        ])
+      )
     : [];
 
   const temasDeMateria = Array.from(

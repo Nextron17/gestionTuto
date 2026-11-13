@@ -202,10 +202,11 @@ export default function MisTutoriasEstudiantePage() {
               <button
                 type="button"
                 onClick={() => setPestana('activas')}
-                className={`inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3.5 py-2 rounded-lg font-label-md text-xs sm:text-[13px] font-semibold transition-all cursor-pointer ${pestana === 'activas'
+                className={`inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3.5 py-2 rounded-lg font-label-md text-xs sm:text-[13px] font-semibold transition-all cursor-pointer ${
+                  pestana === 'activas'
                     ? 'bg-primary text-on-primary shadow-sm'
                     : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
-                  }`}
+                }`}
               >
                 <Icon className="text-[16px]">event_available</Icon>
                 <span className="truncate">Activas ({totalActivas})</span>
@@ -213,10 +214,11 @@ export default function MisTutoriasEstudiantePage() {
               <button
                 type="button"
                 onClick={() => setPestana('grabaciones')}
-                className={`inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3.5 py-2 rounded-lg font-label-md text-xs sm:text-[13px] font-semibold transition-all cursor-pointer ${pestana === 'grabaciones'
+                className={`inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3.5 py-2 rounded-lg font-label-md text-xs sm:text-[13px] font-semibold transition-all cursor-pointer ${
+                  pestana === 'grabaciones'
                     ? 'bg-primary text-on-primary shadow-sm'
                     : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
-                  }`}
+                }`}
               >
                 <Icon className="text-[16px]">play_circle</Icon>
                 <span className="truncate">Grabaciones ({totalGrabaciones})</span>
@@ -224,10 +226,11 @@ export default function MisTutoriasEstudiantePage() {
               <button
                 type="button"
                 onClick={() => setPestana('historial')}
-                className={`inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3.5 py-2 rounded-lg font-label-md text-xs sm:text-[13px] font-semibold transition-all cursor-pointer ${pestana === 'historial'
+                className={`inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3.5 py-2 rounded-lg font-label-md text-xs sm:text-[13px] font-semibold transition-all cursor-pointer ${
+                  pestana === 'historial'
                     ? 'bg-primary text-on-primary shadow-sm'
                     : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
-                  }`}
+                }`}
               >
                 <Icon className="text-[16px]">history_edu</Icon>
                 <span className="truncate">Historial ({totalHistorial})</span>
@@ -276,17 +279,17 @@ export default function MisTutoriasEstudiantePage() {
             {pestana === 'activas'
               ? 'event_busy'
               : pestana === 'grabaciones'
-                ? 'video_library'
-                : 'history'}
+              ? 'video_library'
+              : 'history'}
           </Icon>
           <p className="text-sm text-on-surface-variant">
             {hayFiltrosActivos
               ? 'No se encontraron tutorías que coincidan con los filtros seleccionados.'
               : pestana === 'activas'
-                ? 'No tienes tutorías activas programadas en este momento.'
-                : pestana === 'grabaciones'
-                  ? 'Todavía no hay grabaciones disponibles en tus tutorías inscritas.'
-                  : 'Aún no tienes tutorías finalizadas en tu historial.'}
+              ? 'No tienes tutorías activas programadas en este momento.'
+              : pestana === 'grabaciones'
+              ? 'Todavía no hay grabaciones disponibles en tus tutorías inscritas.'
+              : 'Aún no tienes tutorías finalizadas en tu historial.'}
           </p>
         </SurfaceCard>
       ) : (

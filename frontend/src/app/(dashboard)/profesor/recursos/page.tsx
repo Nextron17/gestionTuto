@@ -248,10 +248,11 @@ export default function RecursosProfesorPage() {
           <button
             type="button"
             onClick={() => cambiarFiltroEscuela('todas')}
-            className={`px-3.5 py-2 rounded-lg font-label-md text-[12px] font-semibold transition-all cursor-pointer active:scale-[0.98] ${escuelaFiltro === 'todas'
+            className={`px-3.5 py-2 rounded-lg font-label-md text-[12px] font-semibold transition-all cursor-pointer active:scale-[0.98] ${
+              escuelaFiltro === 'todas'
                 ? 'bg-primary text-on-primary shadow-sm'
                 : 'bg-surface-container text-on-surface hover:bg-primary-fixed hover:text-primary'
-              }`}
+            }`}
           >
             Todas las Escuelas
           </button>
@@ -260,10 +261,11 @@ export default function RecursosProfesorPage() {
               key={esc._id}
               type="button"
               onClick={() => cambiarFiltroEscuela(esc.nombre)}
-              className={`px-3.5 py-2 rounded-lg font-label-md text-[12px] font-semibold transition-all cursor-pointer active:scale-[0.98] ${escuelaFiltro === esc.nombre
+              className={`px-3.5 py-2 rounded-lg font-label-md text-[12px] font-semibold transition-all cursor-pointer active:scale-[0.98] ${
+                escuelaFiltro === esc.nombre
                   ? 'bg-primary text-on-primary shadow-sm'
                   : 'bg-surface-container text-on-surface hover:bg-primary-fixed hover:text-primary'
-                }`}
+              }`}
             >
               {esc.nombre}
             </button>
