@@ -1,0 +1,18 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const tutorias_controller_1 = require("../controllers/tutorias.controller");
+const auth_middleware_1 = require("../middlewares/auth.middleware");
+const router = (0, express_1.Router)();
+router.use(auth_middleware_1.verificarToken);
+router.get('/', tutorias_controller_1.obtenerTutorias);
+router.get('/grupales', tutorias_controller_1.obtenerTutoriasGrupales);
+router.get('/:id/acceso', tutorias_controller_1.obtenerEnlacesTutoria);
+router.post('/', tutorias_controller_1.crearTutoria);
+router.patch('/:id', tutorias_controller_1.cambiarEstadoTutoria);
+router.patch('/:id/cancelar', tutorias_controller_1.cancelarSolicitudTutoria);
+router.post('/:id/inscribirse', tutorias_controller_1.inscribirseTutoriaGrupal);
+router.patch('/:id/asistencia', tutorias_controller_1.registrarAsistencia);
+router.post('/:id/recursos', tutorias_controller_1.agregarRecurso);
+router.patch('/:id/finalizar', tutorias_controller_1.finalizarTutoria);
+exports.default = router;

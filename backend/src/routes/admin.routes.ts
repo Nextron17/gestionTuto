@@ -13,6 +13,9 @@ import {
   crearMateria,
   eliminarMateria,
   obtenerReportesGlobales,
+  obtenerRecursosAdmin,
+  actualizarRecursoAdmin,
+  eliminarRecursoAdmin,
 } from '../controllers/admin.controller';
 import { verificarToken } from '../middlewares/auth.middleware';
 import { permitirRoles } from '../middlewares/role.middleware';
@@ -37,5 +40,9 @@ router.post('/materias', crearMateria);
 router.delete('/materias/:id', eliminarMateria);
 
 router.get('/reportes', obtenerReportesGlobales);
+
+router.get('/recursos', obtenerRecursosAdmin);
+router.put('/recursos/:id', actualizarRecursoAdmin);
+router.delete('/recursos/:id', eliminarRecursoAdmin);
 
 export default router;

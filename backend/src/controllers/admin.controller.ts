@@ -1,11 +1,14 @@
 import { Response } from 'express';
 import bcrypt from 'bcryptjs';
+import { PipelineStage } from 'mongoose';
 import { AuthRequest } from '../middlewares/auth.middleware';
 import Usuario from '../models/Usuario';
 import Escuela from '../models/Escuela';
 import Carrera from '../models/Carrera';
 import Materia from '../models/Materia';
 import SolicitudTutoria from '../models/SolicitudTutoria';
+import Recurso from '../models/Recurso';
+import HorarioDisponible from '../models/HorarioDisponible';
 
 export const obtenerUsuarios = async (req: AuthRequest, res: Response) => {
   try {
@@ -241,25 +244,380 @@ export const eliminarMateria = async (req: AuthRequest, res: Response) => {
 
 export const obtenerReportesGlobales = async (req: AuthRequest, res: Response) => {
   try {
-    const totalEstudiantes = await Usuario.countDocuments({ rol: 'estudiante' });
-    const totalProfesores = await Usuario.countDocuments({ rol: 'profesor' });
+    const carreraFilter =
+      typeof req.query.carrera === 'string' &&
+      req.query.carrera.trim() !== '' &&
+      req.query.carrera.trim() !== 'todas'
+        ? req.query.carrera.trim()
+        : null;
+
+    const semestreRaw =
+      typeof req.query.semestre === 'string' ? req.query.semestre.trim() : '';
+    const semestreParsed =
+      semestreRaw !== '' && semestreRaw !== 'todos' ? Number(semestreRaw) : NaN;
+    const semestreFilter = Number.isFinite(semestreParsed) ? semestreParsed : null;
+
+    const matchEstudiante: Record<string, unknown> = {};
+    if (carreraFilter) matchEstudiante['estudianteDoc.carrera'] = carreraFilter;
+    if (semestreFilter !== null) matchEstudiante['estudianteDoc.semestre'] = semestreFilter;
+
+    const pipelineBase: PipelineStage[] = [
+      {
+        $lookup: {
+          from: Usuario.collection.name,
+          localField: 'estudiante',
+          foreignField: '_id',
+          as: 'estudianteDoc',
+        },
+      },
+      {
+        $unwind: {
+          path: '$estudianteDoc',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+    ];
+
+    if (Object.keys(matchEstudiante).length > 0) {
+      pipelineBase.push({ $match: matchEstudiante });
+    }
+
+    const pipelineFacet: PipelineStage[] = [
+      ...pipelineBase,
+      {
+        $facet: {
+          resumen: [
+            {
+              $group: {
+                _id: null,
+                totalTutorias: { $sum: 1 },
+                tutoriasPendientes: {
+                  $sum: { $cond: [{ $eq: ['$estado', 'pendiente'] }, 1, 0] },
+                },
+                tutoriasAceptadas: {
+                  $sum: { $cond: [{ $eq: ['$estado', 'aceptada'] }, 1, 0] },
+                },
+                tutoriasFinalizadas: {
+                  $sum: { $cond: [{ $eq: ['$estado', 'finalizada'] }, 1, 0] },
+                },
+                tutoriasAplazadas: {
+                  $sum: { $cond: [{ $eq: ['$estado', 'aplazada'] }, 1, 0] },
+                },
+                tutoriasCanceladas: {
+                  $sum: { $cond: [{ $eq: ['$estado', 'cancelada'] }, 1, 0] },
+                },
+                tutoriasVirtuales: {
+                  $sum: { $cond: [{ $eq: ['$modalidad', 'virtual'] }, 1, 0] },
+                },
+                tutoriasPresenciales: {
+                  $sum: { $cond: [{ $eq: ['$modalidad', 'presencial'] }, 1, 0] },
+                },
+                tutoriasIndividuales: {
+                  $sum: { $cond: [{ $eq: ['$tipo', 'individual'] }, 1, 0] },
+                },
+                tutoriasGrupales: {
+                  $sum: { $cond: [{ $eq: ['$tipo', 'grupal'] }, 1, 0] },
+                },
+                asistenciasConfirmadas: {
+                  $sum: { $cond: [{ $eq: ['$asistenciaEstudiante', true] }, 1, 0] },
+                },
+                inasistenciasRegistradas: {
+                  $sum: { $cond: [{ $eq: ['$asistenciaEstudiante', false] }, 1, 0] },
+                },
+              },
+            },
+          ],
+          demandaPorMateria: [
+            {
+              $group: {
+                _id: { $ifNull: ['$materia', 'Sin especificar'] },
+                totalSolicitudes: { $sum: 1 },
+                finalizadas: {
+                  $sum: { $cond: [{ $eq: ['$estado', 'finalizada'] }, 1, 0] },
+                },
+                pendientes: {
+                  $sum: { $cond: [{ $eq: ['$estado', 'pendiente'] }, 1, 0] },
+                },
+                carreras: {
+                  $addToSet: {
+                    $cond: [
+                      {
+                        $or: [
+                          { $eq: ['$estudianteDoc.carrera', null] },
+                          { $eq: ['$estudianteDoc.carrera', ''] },
+                        ],
+                      },
+                      'Sin carrera',
+                      '$estudianteDoc.carrera',
+                    ],
+                  },
+                },
+              },
+            },
+            { $sort: { totalSolicitudes: -1, _id: 1 } },
+            {
+              $project: {
+                _id: 0,
+                materia: '$_id',
+                totalSolicitudes: 1,
+                finalizadas: 1,
+                pendientes: 1,
+                carreras: 1,
+              },
+            },
+          ],
+          demandaPorTema: [
+            {
+              $addFields: {
+                temaNormalizado: {
+                  $let: {
+                    vars: {
+                      trimmed: { $trim: { input: { $ifNull: ['$tema', ''] } } },
+                    },
+                    in: {
+                      $cond: [
+                        { $eq: ['$$trimmed', ''] },
+                        'Tema general / Sin especificar',
+                        '$$trimmed',
+                      ],
+                    },
+                  },
+                },
+              },
+            },
+            {
+              $group: {
+                _id: {
+                  materia: { $ifNull: ['$materia', 'Sin especificar'] },
+                  tema: '$temaNormalizado',
+                },
+                totalSolicitudes: { $sum: 1 },
+                finalizadas: {
+                  $sum: { $cond: [{ $eq: ['$estado', 'finalizada'] }, 1, 0] },
+                },
+                pendientes: {
+                  $sum: { $cond: [{ $eq: ['$estado', 'pendiente'] }, 1, 0] },
+                },
+              },
+            },
+            { $sort: { totalSolicitudes: -1, '_id.materia': 1 } },
+            {
+              $project: {
+                _id: 0,
+                materia: '$_id.materia',
+                tema: '$_id.tema',
+                totalSolicitudes: 1,
+                finalizadas: 1,
+                pendientes: 1,
+              },
+            },
+          ],
+          demandaPorCarreraSemestre: [
+            {
+              $group: {
+                _id: {
+                  carrera: {
+                    $cond: [
+                      {
+                        $or: [
+                          { $eq: ['$estudianteDoc.carrera', null] },
+                          { $eq: ['$estudianteDoc.carrera', ''] },
+                        ],
+                      },
+                      'Sin carrera registrada',
+                      '$estudianteDoc.carrera',
+                    ],
+                  },
+                  semestre: '$estudianteDoc.semestre',
+                },
+                totalSolicitudes: { $sum: 1 },
+                materiasPrincipales: { $addToSet: '$materia' },
+              },
+            },
+            { $sort: { totalSolicitudes: -1, '_id.carrera': 1, '_id.semestre': 1 } },
+            {
+              $project: {
+                _id: 0,
+                carrera: '$_id.carrera',
+                semestre: '$_id.semestre',
+                totalSolicitudes: 1,
+                materiasPrincipales: 1,
+              },
+            },
+          ],
+        },
+      },
+    ];
+
+    const [
+      totalEstudiantes,
+      totalProfesores,
+      totalRecursos,
+      totalHorarios,
+      carrerasCatalogo,
+      carrerasEstudiantes,
+      semestresEstudiantes,
+      agregado,
+    ] = await Promise.all([
+      Usuario.countDocuments({ rol: 'estudiante' }),
+      Usuario.countDocuments({ rol: 'profesor' }),
+      Recurso.countDocuments(),
+      HorarioDisponible.countDocuments(),
+      Carrera.find().select('nombre'),
+      Usuario.distinct('carrera', { rol: 'estudiante' }),
+      Usuario.distinct('semestre', { rol: 'estudiante' }),
+      SolicitudTutoria.aggregate(pipelineFacet),
+    ]);
+
+    const facetResult = agregado[0] || {};
+    const resumen = facetResult.resumen?.[0] || {
+      totalTutorias: 0,
+      tutoriasPendientes: 0,
+      tutoriasAceptadas: 0,
+      tutoriasFinalizadas: 0,
+      tutoriasAplazadas: 0,
+      tutoriasCanceladas: 0,
+      tutoriasVirtuales: 0,
+      tutoriasPresenciales: 0,
+      tutoriasIndividuales: 0,
+      tutoriasGrupales: 0,
+      asistenciasConfirmadas: 0,
+      inasistenciasRegistradas: 0,
+    };
+
+    const carrerasDisponibles = Array.from(
+      new Set([
+        ...carrerasCatalogo.map((c) => c.nombre),
+        ...carrerasEstudiantes.filter((c): c is string => typeof c === 'string' && c.trim() !== ''),
+      ])
+    ).sort((a, b) => a.localeCompare(b));
+
+    const semestresDisponibles = semestresEstudiantes
+      .filter((s): s is number => typeof s === 'number' && Number.isFinite(s))
+      .sort((a, b) => a - b);
+
     const totalUsuarios = totalEstudiantes + totalProfesores;
-    const totalTutorias = await SolicitudTutoria.countDocuments();
-    const tutoriasPendientes = await SolicitudTutoria.countDocuments({ estado: 'pendiente' });
-    const tutoriasAceptadas = await SolicitudTutoria.countDocuments({ estado: 'aceptada' });
-    const tutoriasFinalizadas = await SolicitudTutoria.countDocuments({ estado: 'finalizada' });
 
     return res.json({
+      fechaGeneracion: new Date().toISOString(),
+      filtros: {
+        periodo: 'Global / Tiempo Real',
+        carrera: carreraFilter || 'Todas',
+        semestre: semestreFilter !== null ? String(semestreFilter) : 'Todos',
+      },
+      carrerasDisponibles,
+      semestresDisponibles,
       totalUsuarios,
       totalEstudiantes,
       totalProfesores,
-      totalTutorias,
-      tutoriasPendientes,
-      tutoriasAceptadas,
-      tutoriasFinalizadas,
+      totalTutorias: resumen.totalTutorias,
+      tutoriasPendientes: resumen.tutoriasPendientes,
+      tutoriasAceptadas: resumen.tutoriasAceptadas,
+      tutoriasFinalizadas: resumen.tutoriasFinalizadas,
+      tutoriasAplazadas: resumen.tutoriasAplazadas,
+      tutoriasCanceladas: resumen.tutoriasCanceladas,
+      tutoriasVirtuales: resumen.tutoriasVirtuales,
+      tutoriasPresenciales: resumen.tutoriasPresenciales,
+      tutoriasIndividuales: resumen.tutoriasIndividuales,
+      tutoriasGrupales: resumen.tutoriasGrupales,
+      asistenciasConfirmadas: resumen.asistenciasConfirmadas,
+      inasistenciasRegistradas: resumen.inasistenciasRegistradas,
+      totalRecursos,
+      totalHorarios,
+      demandaPorMateria: facetResult.demandaPorMateria || [],
+      demandaPorTema: facetResult.demandaPorTema || [],
+      demandaPorCarreraSemestre: facetResult.demandaPorCarreraSemestre || [],
     });
   } catch (error) {
     console.error('Error al generar reportes:', error);
     return res.status(500).json({ message: 'Error al generar métricas del sistema' });
+  }
+};
+
+export const obtenerRecursosAdmin = async (req: AuthRequest, res: Response) => {
+  try {
+    const { escuela } = req.query;
+    const filtro: Record<string, unknown> = {};
+
+    if (typeof escuela === 'string' && escuela.trim() !== '' && escuela !== 'todas') {
+      filtro.escuela = escuela.trim();
+    }
+
+    const recursos = await Recurso.find(filtro)
+      .populate('profesor', 'nombre email escuela carrera')
+      .sort({ createdAt: -1 });
+
+    return res.json(recursos);
+  } catch (error) {
+    console.error('Error al obtener recursos para administración:', error);
+    return res.status(500).json({ message: 'Error al obtener recursos académicos' });
+  }
+};
+
+export const actualizarRecursoAdmin = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { titulo, escuela, materia, tema, tipo, claseOrigen, link } = req.body;
+
+    if (!titulo || !String(titulo).trim() || !materia || !String(materia).trim() || !link || !String(link).trim()) {
+      return res.status(400).json({
+        message: 'El título, la materia y el enlace del recurso son obligatorios',
+      });
+    }
+
+    const recursoExistente = await Recurso.findById(id);
+    if (!recursoExistente) {
+      return res.status(404).json({ message: 'Recurso no encontrado' });
+    }
+
+    if (tipo !== undefined) {
+      const tipoLimpio = String(tipo)
+        .trim()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+      if (!['video', 'guia', 'documento', 'enlace'].includes(tipoLimpio)) {
+        return res.status(400).json({
+          message: 'Tipo de recurso no válido. Usa video, guia, documento o enlace',
+        });
+      }
+      recursoExistente.tipo = tipoLimpio as 'video' | 'guia' | 'documento' | 'enlace';
+    }
+
+    recursoExistente.titulo = String(titulo).trim();
+    recursoExistente.escuela =
+      typeof escuela === 'string' && escuela.trim() !== '' ? escuela.trim() : 'General';
+    recursoExistente.materia = String(materia).trim();
+    recursoExistente.tema = typeof tema === 'string' ? tema.trim() : '';
+    recursoExistente.claseOrigen = typeof claseOrigen === 'string' ? claseOrigen.trim() : '';
+    recursoExistente.link = String(link).trim();
+
+    await recursoExistente.save();
+
+    const actualizado = await Recurso.findById(id).populate(
+      'profesor',
+      'nombre email escuela carrera'
+    );
+    return res.json(actualizado);
+  } catch (error) {
+    console.error('Error al actualizar recurso:', error);
+    return res.status(500).json({ message: 'Error al actualizar el recurso académico' });
+  }
+};
+
+export const eliminarRecursoAdmin = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const recursoExistente = await Recurso.findById(id);
+    if (!recursoExistente) {
+      return res.status(404).json({ message: 'Recurso no encontrado' });
+    }
+
+    await Recurso.findByIdAndDelete(id);
+    return res.json({ message: 'Recurso eliminado correctamente' });
+  } catch (error) {
+    console.error('Error al eliminar recurso:', error);
+    return res.status(500).json({ message: 'Error al eliminar el recurso académico' });
   }
 };

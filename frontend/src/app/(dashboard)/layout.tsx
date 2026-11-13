@@ -3,6 +3,7 @@
 import { useAuth } from '../../context/AuthContext';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect } from 'react';
+import { Icon } from '../../components/ui/Icon';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -23,12 +24,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [user, loading, pathname, router]);
 
   if (loading) {
-    return <div className="flex items-center justify-center min-h-screen">Cargando panel...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-surface text-on-surface-variant text-sm gap-2">
+        <Icon className="text-primary animate-pulse">hourglass_top</Icon>
+        <span>Cargando espacio de trabajo...</span>
+      </div>
+    );
   }
 
-  return (
-    <div className="flex min-h-screen bg-gray-100">
-      <main className="flex-1 p-6">{children}</main>
-    </div>
-  );
+  return <>{children}</>;
 }
