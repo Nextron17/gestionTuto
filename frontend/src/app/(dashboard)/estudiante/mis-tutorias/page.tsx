@@ -87,52 +87,52 @@ export default function MisTutoriasEstudiantePage() {
   const totalHistorial = tutorias.filter((t) => t.estado === 'finalizada').length;
 
   return (
-    <div className="space-y-space-lg max-w-6xl mx-auto">
+    <div className="space-y-space-lg max-w-6xl mx-auto min-w-0">
       <PageHeader
         eyebrow="03. Agenda Académica"
         title="Mis Tutorías e Historial"
         description="Consulta tus sesiones programadas, enlaces de reunión, asistencia registrada y clases finalizadas."
         actions={
-          <div className="flex bg-surface-container-low p-1 rounded-xl">
+          <div className="grid grid-cols-2 sm:flex w-full sm:w-auto bg-surface-container-low p-1 rounded-xl gap-1">
             <button
               type="button"
               onClick={() => setPestana('activas')}
-              className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg font-label-md text-[13px] font-semibold transition-all cursor-pointer ${
+              className={`inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-4 py-2 rounded-lg font-label-md text-xs sm:text-[13px] font-semibold transition-all cursor-pointer ${
                 pestana === 'activas'
                   ? 'bg-primary text-on-primary shadow-sm'
                   : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
               }`}
             >
               <Icon className="text-[16px]">event_available</Icon>
-              <span>Próximas / Activas ({totalActivas})</span>
+              <span className="truncate">Activas ({totalActivas})</span>
             </button>
             <button
               type="button"
               onClick={() => setPestana('historial')}
-              className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg font-label-md text-[13px] font-semibold transition-all cursor-pointer ${
+              className={`inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-4 py-2 rounded-lg font-label-md text-xs sm:text-[13px] font-semibold transition-all cursor-pointer ${
                 pestana === 'historial'
                   ? 'bg-primary text-on-primary shadow-sm'
                   : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
               }`}
             >
               <Icon className="text-[16px]">history_edu</Icon>
-              <span>Historial ({totalHistorial})</span>
+              <span className="truncate">Historial ({totalHistorial})</span>
             </button>
           </div>
         }
       />
 
       {/* Resumen KPI Cards (Patrón Canónico Sección 05) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-space-md">
         <SurfaceCard
           tone="lowest"
-          className="p-space-md flex items-center justify-between"
+          className="p-4 sm:p-space-md flex items-center justify-between gap-3"
         >
-          <div>
+          <div className="min-w-0">
             <span className="font-label-md text-[11px] uppercase text-outline font-semibold tracking-wider block">
               Sesiones Activas Programadas
             </span>
-            <div className="flex items-baseline gap-2 mt-1">
+            <div className="flex flex-wrap items-baseline gap-2 mt-1">
               <span className="font-headline-lg text-2xl font-bold text-on-surface">
                 {totalActivas}
               </span>
@@ -144,20 +144,20 @@ export default function MisTutoriasEstudiantePage() {
               Disponibles con acceso a sala o aula
             </span>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-primary-fixed flex items-center justify-center text-primary shrink-0">
-            <Icon className="text-[24px]">calendar_month</Icon>
+          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-primary-fixed flex items-center justify-center text-primary shrink-0">
+            <Icon className="text-[22px] sm:text-[24px]">calendar_month</Icon>
           </div>
         </SurfaceCard>
 
         <SurfaceCard
           tone="lowest"
-          className="p-space-md flex items-center justify-between"
+          className="p-4 sm:p-space-md flex items-center justify-between gap-3"
         >
-          <div>
+          <div className="min-w-0">
             <span className="font-label-md text-[11px] uppercase text-outline font-semibold tracking-wider block">
               Tutorías Completadas
             </span>
-            <div className="flex items-baseline gap-2 mt-1">
+            <div className="flex flex-wrap items-baseline gap-2 mt-1">
               <span className="font-headline-lg text-2xl font-bold text-on-surface">
                 {totalHistorial}
               </span>
@@ -167,14 +167,14 @@ export default function MisTutoriasEstudiantePage() {
               Con registro de asistencia y grabaciones
             </span>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-secondary-fixed flex items-center justify-center text-secondary shrink-0">
-            <Icon className="text-[24px]">verified</Icon>
+          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-secondary-fixed flex items-center justify-center text-secondary shrink-0">
+            <Icon className="text-[22px] sm:text-[24px]">verified</Icon>
           </div>
         </SurfaceCard>
       </div>
 
       {tutorias.length > 0 && (
-        <SurfaceCard tone="lowest" className="p-space-md">
+        <SurfaceCard tone="lowest" className="p-4 sm:p-space-md">
           <div className="max-w-lg">
             <SearchInput
               placeholder="Filtrar sesiones por materia, tema o profesor..."
@@ -187,7 +187,7 @@ export default function MisTutoriasEstudiantePage() {
       )}
 
       {listaMostrar.length === 0 ? (
-        <SurfaceCard tone="lowest" className="p-10 text-center space-y-2">
+        <SurfaceCard tone="lowest" className="p-8 sm:p-10 text-center space-y-2">
           <Icon className="text-outline text-[36px]">
             {pestana === 'activas' ? 'event_busy' : 'history'}
           </Icon>
@@ -200,7 +200,7 @@ export default function MisTutoriasEstudiantePage() {
           </p>
         </SurfaceCard>
       ) : (
-        <div className="space-y-space-md">
+        <div className="space-y-4 sm:space-y-space-md">
           {listaMostrar.map((tutoria) => {
             const miAsistencia = obtenerMiAsistencia(tutoria);
             return (
@@ -209,12 +209,12 @@ export default function MisTutoriasEstudiantePage() {
                 as="article"
                 tone="lowest"
                 interactive
-                className="p-space-lg space-y-4"
+                className="p-4 sm:p-space-lg space-y-4"
               >
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
                   <div className="space-y-2 min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="font-label-md text-base font-bold text-on-surface group-hover:text-primary transition-colors">
+                      <h2 className="font-label-md text-[15px] sm:text-base font-bold text-on-surface group-hover:text-primary transition-colors break-words">
                         {tutoria.materia} {tutoria.tema ? `• ${tutoria.tema}` : ''}
                       </h2>
                       <Badge variant="primary" pill={false} className="capitalize">
@@ -231,30 +231,34 @@ export default function MisTutoriasEstudiantePage() {
                       </Badge>
                     </div>
 
-                    <p className="font-body-md text-on-surface-variant text-[13px] leading-relaxed">
+                    <p className="font-body-md text-on-surface-variant text-[13px] leading-relaxed break-words">
                       {tutoria.descripcion}
                     </p>
 
-                    <div className="flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-on-surface-variant pt-1">
-                      <span className="inline-flex items-center gap-1.5">
+                    <div className="flex flex-col xs:flex-row flex-wrap gap-x-5 gap-y-1.5 text-xs text-on-surface-variant pt-1">
+                      <span className="inline-flex flex-wrap items-center gap-1 min-w-0">
                         <Icon className="text-[16px] text-primary">person</Icon>
                         <span>Docente:</span>
-                        <strong className="font-semibold text-on-surface">
+                        <strong className="font-semibold text-on-surface break-words">
                           {tutoria.profesor?.nombre}
-                        </strong>{' '}
-                        <span className="text-outline">({tutoria.profesor?.email})</span>
+                        </strong>
+                        {tutoria.profesor?.email && (
+                          <span className="text-outline break-all">
+                            ({tutoria.profesor.email})
+                          </span>
+                        )}
                       </span>
-                      <span className="inline-flex items-center gap-1.5">
+                      <span className="inline-flex flex-wrap items-center gap-1 min-w-0">
                         <Icon className="text-[16px] text-outline">schedule</Icon>
                         <span>Horario:</span>
-                        <strong className="font-semibold text-on-surface">
+                        <strong className="font-semibold text-on-surface break-words">
                           {tutoria.hora || 'Por definir'}
                         </strong>
                       </span>
                     </div>
                   </div>
 
-                  <div className="flex sm:flex-col items-center sm:items-end gap-2 shrink-0">
+                  <div className="flex flex-wrap sm:flex-col items-center sm:items-end justify-between gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-surface-container shrink-0">
                     <Badge
                       variant={tutoria.estado === 'aceptada' ? 'success' : 'primary'}
                       dot
@@ -336,7 +340,7 @@ export default function MisTutoriasEstudiantePage() {
                 )}
 
                 {tutoria.recursos && tutoria.recursos.length > 0 && (
-                  <div className="p-space-md rounded-xl bg-surface-container-low space-y-2">
+                  <div className="p-3.5 sm:p-space-md rounded-xl bg-surface-container-low space-y-2 min-w-0">
                     <h3 className="font-label-md text-xs font-bold text-on-surface flex items-center gap-1.5">
                       <Icon className="text-[16px] text-primary">folder</Icon>
                       <span>Documentos y Materiales de la Sesión</span>
@@ -348,7 +352,7 @@ export default function MisTutoriasEstudiantePage() {
                           href={link}
                           target="_blank"
                           rel="noreferrer"
-                          className="p-2.5 rounded-lg bg-surface-container-lowest hover:bg-primary-fixed/40 flex items-center justify-between gap-2 text-xs text-primary font-medium transition-colors"
+                          className="p-2.5 rounded-lg bg-surface-container-lowest hover:bg-primary-fixed/40 flex items-center justify-between gap-2 text-xs text-primary font-medium transition-colors min-w-0"
                         >
                           <span className="truncate">{link}</span>
                           <Icon className="text-[16px] shrink-0">download</Icon>

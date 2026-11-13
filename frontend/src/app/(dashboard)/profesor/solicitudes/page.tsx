@@ -274,24 +274,24 @@ export default function SolicitudesProfesorPage() {
       )}
 
       {/* Solicitudes Pendientes o Aplazadas */}
-      <SurfaceCard tone="lowest" className="p-space-lg space-y-space-md">
+      <SurfaceCard tone="lowest" className="p-4 sm:p-space-lg space-y-space-md">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-surface-container">
-          <div>
-            <h2 className="text-lg font-bold text-on-surface flex items-center gap-2">
-              <Icon className="text-tertiary text-[22px]">pending_actions</Icon>
+          <div className="min-w-0">
+            <h2 className="text-base sm:text-lg font-bold text-on-surface flex items-center gap-2">
+              <Icon className="text-tertiary text-[22px] shrink-0">pending_actions</Icon>
               <span>Solicitudes Pendientes / Aplazadas</span>
             </h2>
             <p className="text-xs text-on-surface-variant mt-0.5">
               Acepta y configura la modalidad de la sesión o propón un nuevo horario al estudiante.
             </p>
           </div>
-          <Badge variant="neutral">
+          <Badge variant="neutral" className="self-start sm:self-auto shrink-0">
             {pendientes.length} {pendientes.length === 1 ? 'petición' : 'peticiones'}
           </Badge>
         </div>
 
         {pendientes.length === 0 ? (
-          <div className="p-8 rounded-xl bg-surface-container-low text-center space-y-1.5">
+          <div className="p-6 sm:p-8 rounded-xl bg-surface-container-low text-center space-y-1.5">
             <Icon className="text-outline text-[32px]">task_alt</Icon>
             <p className="text-sm text-on-surface-variant">
               ¡Estás al día! No tienes solicitudes pendientes por responder.
@@ -302,11 +302,11 @@ export default function SolicitudesProfesorPage() {
             {pendientes.map((sol) => (
               <div
                 key={sol._id}
-                className="p-space-md rounded-xl bg-surface-container-low hover:bg-surface-container/70 transition-colors flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4"
+                className="p-3.5 sm:p-space-md rounded-xl bg-surface-container-low hover:bg-surface-container/70 transition-colors flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4"
               >
                 <div className="space-y-2 min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-label-md text-[15px] font-bold text-on-surface">
+                    <span className="font-label-md text-[15px] font-bold text-on-surface break-words">
                       {sol.materia} {sol.tema ? `• ${sol.tema}` : ''}
                     </span>
                     {sol.estado === 'aplazada' ? (
@@ -321,21 +321,21 @@ export default function SolicitudesProfesorPage() {
                     )}
                   </div>
 
-                  <p className="font-body-md text-[13px] text-on-surface-variant leading-relaxed">
+                  <p className="font-body-md text-[13px] text-on-surface-variant leading-relaxed break-words">
                     {sol.descripcion}
                   </p>
 
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-on-surface-variant">
-                    <span className="inline-flex items-center gap-1.5">
-                      <Icon className="text-[15px] text-primary">school</Icon>
+                  <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-x-4 gap-y-1.5 text-xs text-on-surface-variant">
+                    <span className="inline-flex flex-wrap items-center gap-1.5 min-w-0">
+                      <Icon className="text-[15px] text-primary shrink-0">school</Icon>
                       <span>Estudiante:</span>
                       <strong className="font-semibold text-on-surface">
                         {sol.estudiante?.nombre}
                       </strong>
-                      <span className="text-outline">({sol.estudiante?.email})</span>
+                      <span className="text-outline break-all">({sol.estudiante?.email})</span>
                     </span>
-                    <span className="inline-flex items-center gap-1.5">
-                      <Icon className="text-[15px] text-outline">schedule</Icon>
+                    <span className="inline-flex flex-wrap items-center gap-1.5">
+                      <Icon className="text-[15px] text-outline shrink-0">schedule</Icon>
                       <span>Horario propuesto:</span>
                       <strong className="font-semibold text-on-surface">
                         {sol.hora || 'Por definir'}
@@ -344,20 +344,21 @@ export default function SolicitudesProfesorPage() {
                   </div>
 
                   {sol.comentarioProfesor && (
-                    <div className="p-2.5 rounded-lg bg-[#fef3c7]/60 text-[#92400e] text-xs flex items-center gap-1.5">
-                      <Icon className="text-[15px] text-tertiary">info</Icon>
-                      <span>
+                    <div className="p-2.5 rounded-lg bg-[#fef3c7]/60 text-[#92400e] text-xs flex items-start gap-1.5">
+                      <Icon className="text-[15px] text-tertiary shrink-0 mt-0.5">info</Icon>
+                      <span className="break-words min-w-0">
                         <strong>Nota previa:</strong> {sol.comentarioProfesor}
                       </span>
                     </div>
                   )}
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2 shrink-0">
+                <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-surface-container-highest/60">
                   <Button
                     variant="primary"
                     size="sm"
                     onClick={() => abrirModalGestion(sol, 'aceptada')}
+                    className="flex-1 sm:flex-initial"
                   >
                     <Icon className="text-[16px]">check_circle</Icon>
                     <span>Aceptar / Configurar</span>
@@ -366,6 +367,7 @@ export default function SolicitudesProfesorPage() {
                     variant="tonal"
                     size="sm"
                     onClick={() => abrirModalGestion(sol, 'aplazada')}
+                    className="flex-1 sm:flex-initial"
                   >
                     <Icon className="text-[16px]">edit_calendar</Icon>
                     <span>Aplazar Hora</span>
@@ -374,6 +376,7 @@ export default function SolicitudesProfesorPage() {
                     variant="danger"
                     size="sm"
                     onClick={() => setSolicitudARechazar(sol)}
+                    className="w-full sm:w-auto"
                   >
                     <Icon className="text-[16px]">delete</Icon>
                     <span>Rechazar</span>
@@ -386,14 +389,14 @@ export default function SolicitudesProfesorPage() {
       </SurfaceCard>
 
       {/* Detalle de Tutoría Activa */}
-      <SurfaceCard tone="lowest" className="p-space-lg space-y-space-lg">
+      <SurfaceCard tone="lowest" className="p-4 sm:p-space-lg space-y-space-lg">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 pb-3 border-b border-surface-container">
-          <div>
+          <div className="min-w-0">
             <span className="font-label-md text-[11px] uppercase tracking-wider text-outline font-semibold">
               Aula Virtual &amp; Seguimiento
             </span>
-            <h3 className="text-lg font-bold text-on-surface flex items-center gap-2">
-              <Icon className="text-[#16a34a] text-[22px]">cast_for_education</Icon>
+            <h3 className="text-base sm:text-lg font-bold text-on-surface flex items-center gap-2">
+              <Icon className="text-[#16a34a] text-[22px] shrink-0">cast_for_education</Icon>
               <span>Gestión de Tutoría Activa</span>
             </h3>
           </div>
@@ -524,7 +527,7 @@ export default function SolicitudesProfesorPage() {
 
             {/* Control de Asistencia (Filas Interactivas Sección 07) */}
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                 <h4 className="font-label-md text-label-md font-bold text-on-surface flex items-center gap-2">
                   <Icon className="text-primary text-[18px]">fact_check</Icon>
                   <span>Control de Asistencia</span>
@@ -543,7 +546,7 @@ export default function SolicitudesProfesorPage() {
                         {getInitials(tutoriaSeleccionada.estudiante.nombre)}
                       </div>
                       <div className="min-w-0">
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                           <span className="font-label-md text-sm font-semibold text-on-surface truncate">
                             {tutoriaSeleccionada.estudiante.nombre}
                           </span>
@@ -555,11 +558,11 @@ export default function SolicitudesProfesorPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="grid grid-cols-2 sm:flex items-center gap-2 w-full sm:w-auto shrink-0">
                       <button
                         type="button"
                         onClick={() => marcarAsistenciaPrincipal(true)}
-                        className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg font-label-md text-xs font-semibold transition-all cursor-pointer active:scale-95 ${
+                        className={`inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg font-label-md text-xs font-semibold transition-all cursor-pointer active:scale-95 ${
                           tutoriaSeleccionada.asistenciaEstudiante === true
                             ? 'bg-[#16a34a] text-white shadow-xs'
                             : 'bg-surface-container-lowest text-on-surface-variant hover:bg-[#dcfce7] hover:text-[#166534]'
@@ -571,7 +574,7 @@ export default function SolicitudesProfesorPage() {
                       <button
                         type="button"
                         onClick={() => marcarAsistenciaPrincipal(false)}
-                        className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg font-label-md text-xs font-semibold transition-all cursor-pointer active:scale-95 ${
+                        className={`inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg font-label-md text-xs font-semibold transition-all cursor-pointer active:scale-95 ${
                           tutoriaSeleccionada.asistenciaEstudiante === false
                             ? 'bg-error text-on-error shadow-xs'
                             : 'bg-surface-container-lowest text-on-surface-variant hover:bg-error-container hover:text-error'
@@ -595,7 +598,7 @@ export default function SolicitudesProfesorPage() {
                         {getInitials(part.estudiante.nombre)}
                       </div>
                       <div className="min-w-0">
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                           <span className="font-label-md text-sm font-semibold text-on-surface truncate">
                             {part.estudiante.nombre}
                           </span>
@@ -607,11 +610,11 @@ export default function SolicitudesProfesorPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="grid grid-cols-2 sm:flex items-center gap-2 w-full sm:w-auto shrink-0">
                       <button
                         type="button"
                         onClick={() => marcarAsistenciaParticipante(part.estudiante._id, true)}
-                        className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg font-label-md text-xs font-semibold transition-all cursor-pointer active:scale-95 ${
+                        className={`inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg font-label-md text-xs font-semibold transition-all cursor-pointer active:scale-95 ${
                           part.asistio === true
                             ? 'bg-[#16a34a] text-white shadow-xs'
                             : 'bg-surface-container-lowest text-on-surface-variant hover:bg-[#dcfce7] hover:text-[#166534]'
@@ -623,7 +626,7 @@ export default function SolicitudesProfesorPage() {
                       <button
                         type="button"
                         onClick={() => marcarAsistenciaParticipante(part.estudiante._id, false)}
-                        className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg font-label-md text-xs font-semibold transition-all cursor-pointer active:scale-95 ${
+                        className={`inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg font-label-md text-xs font-semibold transition-all cursor-pointer active:scale-95 ${
                           part.asistio === false
                             ? 'bg-error text-on-error shadow-xs'
                             : 'bg-surface-container-lowest text-on-surface-variant hover:bg-error-container hover:text-error'
@@ -677,7 +680,7 @@ export default function SolicitudesProfesorPage() {
                   onChange={(e) => setNuevoRecurso(e.target.value)}
                   containerClassName="flex-1"
                 />
-                <Button variant="tonal" onClick={agregarRecurso} className="shrink-0">
+                <Button variant="tonal" onClick={agregarRecurso} className="w-full sm:w-auto shrink-0">
                   <Icon className="text-[18px]">add</Icon>
                   <span>Subir Recurso</span>
                 </Button>
@@ -690,6 +693,7 @@ export default function SolicitudesProfesorPage() {
                 variant="tonal"
                 size="sm"
                 onClick={() => abrirModalGestion(tutoriaSeleccionada, 'aplazada')}
+                className="w-full sm:w-auto"
               >
                 <Icon className="text-[16px]">edit_calendar</Icon>
                 <span>Reprogramar / Aplazar Hora</span>
@@ -698,6 +702,7 @@ export default function SolicitudesProfesorPage() {
               <Button
                 variant="primary"
                 onClick={() => finalizarTutoria(tutoriaSeleccionada._id)}
+                className="w-full sm:w-auto text-center"
               >
                 <Icon className="text-[18px]">task_alt</Icon>
                 <span>Finalizar Clase y Guardar en Historial / Recursos</span>

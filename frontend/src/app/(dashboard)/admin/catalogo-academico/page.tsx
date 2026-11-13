@@ -198,7 +198,7 @@ export default function CatalogoAcademicoPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-space-md">
         {/* Columna 1: Escuelas */}
-        <SurfaceCard tone="lowest" className="p-space-lg space-y-space-md flex flex-col">
+        <SurfaceCard tone="lowest" className="p-4 sm:p-space-lg space-y-space-md flex flex-col">
           <div className="flex items-center justify-between pb-2 border-b border-surface-container">
             <h2 className="font-label-md text-base font-bold text-on-surface flex items-center gap-2">
               <Icon className="text-primary text-[20px]">domain</Icon>
@@ -262,7 +262,7 @@ export default function CatalogoAcademicoPage() {
         </SurfaceCard>
 
         {/* Columna 2: Carreras */}
-        <SurfaceCard tone="lowest" className="p-space-lg space-y-space-md flex flex-col">
+        <SurfaceCard tone="lowest" className="p-4 sm:p-space-lg space-y-space-md flex flex-col">
           <div className="flex items-center justify-between pb-2 border-b border-surface-container">
             <h2 className="font-label-md text-base font-bold text-on-surface flex items-center gap-2">
               <Icon className="text-secondary text-[20px]">school</Icon>
@@ -344,7 +344,7 @@ export default function CatalogoAcademicoPage() {
         </SurfaceCard>
 
         {/* Columna 3: Materias */}
-        <SurfaceCard tone="lowest" className="p-space-lg space-y-space-md flex flex-col">
+        <SurfaceCard tone="lowest" className="p-4 sm:p-space-lg space-y-space-md flex flex-col">
           <div className="flex items-center justify-between pb-2 border-b border-surface-container">
             <h2 className="font-label-md text-base font-bold text-on-surface flex items-center gap-2">
               <Icon className="text-[#16a34a] text-[20px]">menu_book</Icon>

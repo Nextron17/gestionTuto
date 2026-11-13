@@ -136,7 +136,7 @@ export default function MisSolicitudesPage() {
   ];
 
   return (
-    <div className="space-y-space-lg max-w-6xl mx-auto">
+    <div className="space-y-space-lg max-w-6xl mx-auto min-w-0">
       <PageHeader
         eyebrow="02. Seguimiento de Citas"
         title="Mis Solicitudes"
@@ -156,7 +156,7 @@ export default function MisSolicitudesPage() {
       />
 
       {solicitudes.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
           {estadosFiltro.map((est) => {
             const activo = filtroEstado === est.id;
             return (
@@ -164,7 +164,7 @@ export default function MisSolicitudesPage() {
                 key={est.id}
                 type="button"
                 onClick={() => setFiltroEstado(est.id)}
-                className={`px-3.5 py-1.5 rounded-full font-label-md text-[12px] font-semibold transition-all cursor-pointer active:scale-95 ${
+                className={`px-3 sm:px-3.5 py-1.5 rounded-full font-label-md text-[12px] font-semibold transition-all cursor-pointer active:scale-95 ${
                   activo
                     ? 'bg-primary text-on-primary shadow-xs'
                     : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface'
@@ -178,33 +178,33 @@ export default function MisSolicitudesPage() {
       )}
 
       {solicitudes.length === 0 ? (
-        <SurfaceCard tone="lowest" className="p-10 text-center space-y-2">
+        <SurfaceCard tone="lowest" className="p-8 sm:p-10 text-center space-y-2">
           <Icon className="text-outline text-[36px]">pending_actions</Icon>
           <p className="text-sm text-on-surface-variant">
             No has solicitado ninguna tutoría todavía.
           </p>
         </SurfaceCard>
       ) : solicitudesFiltradas.length === 0 ? (
-        <SurfaceCard tone="lowest" className="p-10 text-center space-y-2">
+        <SurfaceCard tone="lowest" className="p-8 sm:p-10 text-center space-y-2">
           <Icon className="text-outline text-[36px]">search_off</Icon>
           <p className="text-sm text-on-surface-variant">
             No hay solicitudes que coincidan con los filtros seleccionados.
           </p>
         </SurfaceCard>
       ) : (
-        <div className="space-y-space-md">
+        <div className="space-y-4 sm:space-y-space-md">
           {solicitudesFiltradas.map((sol) => (
             <SurfaceCard
               key={sol._id}
               as="article"
               tone="lowest"
               interactive
-              className="p-space-lg flex flex-col justify-between gap-4"
+              className="p-4 sm:p-space-lg flex flex-col justify-between gap-4"
             >
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-4">
                 <div className="space-y-2 min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="font-label-md text-base font-bold text-on-surface group-hover:text-primary transition-colors">
+                    <h2 className="font-label-md text-[15px] sm:text-base font-bold text-on-surface group-hover:text-primary transition-colors break-words">
                       {sol.materia} {sol.tema ? `• ${sol.tema}` : ''}
                     </h2>
                     {sol.modalidad && (
@@ -217,29 +217,29 @@ export default function MisSolicitudesPage() {
                     )}
                   </div>
 
-                  <p className="font-body-md text-on-surface-variant text-[13px] leading-relaxed">
+                  <p className="font-body-md text-on-surface-variant text-[13px] leading-relaxed break-words">
                     {sol.descripcion}
                   </p>
 
                   <div className="flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-on-surface-variant pt-1">
-                    <span className="inline-flex items-center gap-1.5">
+                    <span className="inline-flex items-center gap-1.5 min-w-0">
                       <Icon className="text-[16px] text-primary">person</Icon>
                       <span>Docente:</span>
-                      <strong className="font-semibold text-on-surface">
+                      <strong className="font-semibold text-on-surface break-words">
                         {sol.profesor?.nombre || 'Por asignar'}
                       </strong>
                     </span>
-                    <span className="inline-flex items-center gap-1.5">
+                    <span className="inline-flex items-center gap-1.5 min-w-0">
                       <Icon className="text-[16px] text-outline">schedule</Icon>
                       <span>Horario:</span>
-                      <strong className="font-semibold text-on-surface">
+                      <strong className="font-semibold text-on-surface break-words">
                         {sol.hora || 'No definido'}
                       </strong>
                     </span>
                   </div>
                 </div>
 
-                <div className="flex sm:flex-col items-center sm:items-end justify-between gap-2.5 shrink-0">
+                <div className="flex flex-wrap sm:flex-col items-center sm:items-end justify-between gap-2.5 pt-2 sm:pt-0 border-t sm:border-t-0 border-surface-container shrink-0">
                   {renderEstadoCita(sol.estado)}
 
                   {(sol.estado === 'pendiente' || sol.estado === 'aplazada') && (

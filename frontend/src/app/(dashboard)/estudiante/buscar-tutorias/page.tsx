@@ -230,24 +230,24 @@ function BuscarTutoriasContent() {
   const hayFiltrosActivos = Boolean(nomProf || materiaFiltro || queryGlobal);
 
   return (
-    <div className="space-y-space-lg max-w-6xl mx-auto">
+    <div className="space-y-space-lg max-w-6xl mx-auto min-w-0">
       <PageHeader
         eyebrow="01. Directorio Académico"
         title="Buscar Tutorías"
         description="Encuentra docentes disponibles, revisa sus franjas horarias o inscríbete en talleres y tutorías grupales."
         actions={
           user?.carrera ? (
-            <Badge variant="primary" className="px-3 py-1">
+            <Badge variant="primary" className="px-3 py-1 max-w-full">
               <Icon className="text-[15px]">school</Icon>
-              <span>{user.carrera}</span>
+              <span className="truncate">{user.carrera}</span>
             </Badge>
           ) : undefined
         }
       />
 
       {/* Barra de búsqueda y filtros canónica (Sección 03 & 04) */}
-      <SurfaceCard tone="lowest" className="p-space-lg space-y-space-md">
-        <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-space-md items-end">
+      <SurfaceCard tone="lowest" className="p-4 sm:p-space-lg space-y-space-md">
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-3 sm:gap-space-md items-end">
           <SearchInput
             id="search-profesor"
             label="Buscar por Docente"
@@ -305,18 +305,18 @@ function BuscarTutoriasContent() {
 
       {/* Tutorías Grupales Programadas Abiertas (Patrón Canónico Sección 05) */}
       {grupalesFiltradas.length > 0 && (
-        <section className="space-y-space-md">
+        <section className="space-y-space-md min-w-0">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div>
-              <span className="font-label-md text-[11px] uppercase tracking-wider text-outline font-semibold">
+            <div className="min-w-0">
+              <span className="font-label-md text-[11px] uppercase tracking-wider text-outline font-semibold block">
                 Sesiones Colaborativas
               </span>
-              <h2 className="text-xl font-semibold text-on-surface flex items-center gap-2">
+              <h2 className="text-lg sm:text-xl font-semibold text-on-surface flex items-center gap-2">
                 <Icon className="text-primary text-[22px]">groups</Icon>
-                <span>Tutorías Grupales Programadas</span>
+                <span className="break-words">Tutorías Grupales Programadas</span>
               </h2>
             </div>
-            <Badge variant="secondary">
+            <Badge variant="secondary" className="self-start sm:self-auto">
               {grupalesFiltradas.length}{' '}
               {grupalesFiltradas.length === 1 ? 'sesión abierta' : 'sesiones abiertas'}
             </Badge>
@@ -331,7 +331,7 @@ function BuscarTutoriasContent() {
             </CalloutBanner>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-md">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-space-md">
             {grupalesFiltradas.map((tg) => {
               const totalInscritos = 1 + (tg.participantes?.length || 0);
               const cupo = tg.cupoMaximo || 10;
@@ -352,30 +352,30 @@ function BuscarTutoriasContent() {
                   as="article"
                   tone="lowest"
                   interactive
-                  className="p-space-md flex flex-col justify-between"
+                  className="p-4 sm:p-space-md flex flex-col justify-between"
                 >
-                  <div>
-                    <div className="flex items-start justify-between gap-2 mb-2">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                       <Badge variant="secondary" pill={false}>
                         <Icon className="text-[13px]">groups</Icon>
-                        <span>Tutoría Grupal Abierta</span>
+                        <span>Tutoría Grupal</span>
                       </Badge>
-                      <span className="font-mono text-[12px] text-outline shrink-0">
+                      <span className="font-mono text-[11px] sm:text-[12px] text-outline">
                         {tg.hora || 'Por confirmar'}
                       </span>
                     </div>
 
-                    <h3 className="font-label-md text-[15px] font-bold text-on-surface mb-1">
+                    <h3 className="font-label-md text-[15px] font-bold text-on-surface mb-1 break-words">
                       {tg.materia} {tg.tema ? `: ${tg.tema}` : ''}
                     </h3>
 
-                    <p className="font-body-md text-[13px] text-on-surface-variant mb-4 line-clamp-2">
+                    <p className="font-body-md text-[13px] text-on-surface-variant mb-4 line-clamp-2 break-words">
                       {tg.descripcion}
                     </p>
 
                     {/* Barra de Cupos (Sección 05) */}
                     <div className="p-space-sm bg-surface-container-low rounded-lg space-y-1.5 mb-4">
-                      <div className="flex justify-between items-center font-label-md text-[12px]">
+                      <div className="flex flex-wrap justify-between items-center gap-1 font-label-md text-[11px] sm:text-[12px]">
                         <span className="text-on-surface font-medium">
                           Cupos Ocupados:{' '}
                           <strong>
@@ -402,21 +402,21 @@ function BuscarTutoriasContent() {
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-3 text-on-surface-variant font-label-md text-[12px]">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-on-surface-variant font-label-md text-[12px]">
                       <span className="flex items-center gap-1 capitalize">
                         <Icon className="text-[16px] text-primary">
                           {tg.modalidad === 'presencial' ? 'location_on' : 'videocam'}
                         </Icon>
                         <span>{tg.modalidad || 'Virtual'}</span>
                       </span>
-                      <span className="flex items-center gap-1">
+                      <span className="flex items-center gap-1 min-w-0">
                         <Icon className="text-[16px] text-outline">person</Icon>
                         <span className="truncate">{tg.profesor?.nombre || 'Docente'}</span>
                       </span>
                     </div>
                   </div>
 
-                  <div className="mt-space-md pt-space-sm flex items-center justify-between gap-2">
+                  <div className="mt-4 pt-3 border-t border-surface-container flex flex-wrap items-center justify-between gap-2">
                     <div className="flex -space-x-2 overflow-hidden">
                       {nombresInscritos.slice(0, 2).map((nom, idx) => (
                         <div
@@ -465,22 +465,24 @@ function BuscarTutoriasContent() {
       )}
 
       {/* Resultados de Profesores (Patrón Canónico Tarjeta de Tutor - Sección 05) */}
-      <section className="space-y-space-md">
+      <section className="space-y-space-md min-w-0">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
-            <span className="font-label-md text-[11px] uppercase tracking-wider text-outline font-semibold">
+            <span className="font-label-md text-[11px] uppercase tracking-wider text-outline font-semibold block">
               Mentoría Individual &amp; Grupal
             </span>
-            <h2 className="text-xl font-semibold text-on-surface">Profesores Disponibles</h2>
+            <h2 className="text-lg sm:text-xl font-semibold text-on-surface">
+              Profesores Disponibles
+            </h2>
           </div>
-          <Badge variant="neutral">
+          <Badge variant="neutral" className="self-start sm:self-auto">
             {profesoresFiltrados.length}{' '}
             {profesoresFiltrados.length === 1 ? 'profesor disponible' : 'profesores disponibles'}
           </Badge>
         </div>
 
         {profesoresFiltrados.length === 0 ? (
-          <SurfaceCard tone="lowest" className="p-10 text-center space-y-2">
+          <SurfaceCard tone="lowest" className="p-8 sm:p-10 text-center space-y-2">
             <Icon className="text-outline text-[36px]">search_off</Icon>
             <p className="text-sm text-on-surface-variant">
               No se encontraron profesores disponibles con ese criterio
@@ -488,7 +490,7 @@ function BuscarTutoriasContent() {
             </p>
           </SurfaceCard>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-md">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-space-md">
             {profesoresFiltrados.map((prof) => (
               <SurfaceCard
                 key={prof._id}
@@ -497,9 +499,9 @@ function BuscarTutoriasContent() {
                 interactive
                 className="overflow-hidden flex flex-col justify-between"
               >
-                <div>
+                <div className="min-w-0">
                   {/* Cabecera Tonal de Tarjeta con Badge */}
-                  <div className="relative h-24 bg-gradient-to-br from-primary/15 via-primary-fixed/60 to-surface-container">
+                  <div className="relative h-20 sm:h-24 bg-gradient-to-br from-primary/15 via-primary-fixed/60 to-surface-container">
                     <div className="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-transparent to-transparent" />
                     <div className="absolute top-3 right-3">
                       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface-container-lowest/90 backdrop-blur text-primary font-label-md text-[11px] font-bold shadow-xs">
@@ -515,31 +517,31 @@ function BuscarTutoriasContent() {
                   </div>
 
                   {/* Cuerpo de Tarjeta de Tutor */}
-                  <div className="px-space-md pt-1 pb-space-md">
-                    <div className="flex items-start gap-3">
-                      <div className="w-14 h-14 -mt-8 rounded-full shadow-md bg-surface-container-lowest p-0.5 relative z-10 shrink-0">
-                        <div className="w-full h-full rounded-full bg-primary text-on-primary font-bold text-base flex items-center justify-center">
+                  <div className="px-4 sm:px-space-md pt-1 pb-4 sm:pb-space-md min-w-0">
+                    <div className="flex items-start gap-3 min-w-0">
+                      <div className="w-12 h-12 sm:w-14 sm:h-14 -mt-7 sm:-mt-8 rounded-full shadow-md bg-surface-container-lowest p-0.5 relative z-10 shrink-0">
+                        <div className="w-full h-full rounded-full bg-primary text-on-primary font-bold text-sm sm:text-base flex items-center justify-center">
                           {getInitials(prof.nombre)}
                         </div>
                       </div>
                       <div className="min-w-0 flex-1">
-                        <h3 className="font-label-md text-label-md font-bold text-on-surface leading-tight group-hover:text-primary transition-colors truncate">
+                        <h3 className="font-label-md text-label-md font-bold text-on-surface leading-snug group-hover:text-primary transition-colors break-words">
                           {prof.nombre}
                         </h3>
-                        <span className="block font-label-md text-[12px] text-on-surface-variant truncate">
+                        <span className="block font-label-md text-[12px] text-on-surface-variant break-words">
                           {prof.carrera || prof.escuela || 'Docente Universitario'}
                         </span>
                       </div>
                     </div>
 
-                    <p className="mt-3 font-body-md text-[12px] text-on-surface-variant flex items-center gap-1.5 truncate">
-                      <Icon className="text-[15px] text-outline">mail</Icon>
+                    <p className="mt-3 font-body-md text-[12px] text-on-surface-variant flex items-center gap-1.5 min-w-0">
+                      <Icon className="text-[15px] text-outline shrink-0">mail</Icon>
                       <span className="truncate">{prof.email}</span>
                     </p>
 
                     <div className="mt-3 flex flex-wrap gap-1.5">
                       {prof.escuela && (
-                        <span className="px-2 py-0.5 rounded bg-primary-fixed text-on-primary-fixed font-label-md text-[11px] font-medium">
+                        <span className="px-2 py-0.5 rounded bg-primary-fixed text-on-primary-fixed font-label-md text-[11px] font-medium break-words">
                           {prof.escuela}
                         </span>
                       )}
@@ -547,7 +549,7 @@ function BuscarTutoriasContent() {
                         prof.materias.map((mat, idx) => (
                           <span
                             key={idx}
-                            className="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-md text-[11px]"
+                            className="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-md text-[11px] break-words"
                           >
                             {mat}
                           </span>
@@ -562,14 +564,14 @@ function BuscarTutoriasContent() {
                 </div>
 
                 {/* Pie de Tarjeta en surface-container-low */}
-                <div className="p-space-md bg-surface-container-low flex items-center justify-between gap-2">
+                <div className="p-3.5 sm:p-space-md bg-surface-container-low flex flex-wrap items-center justify-between gap-2">
                   <button
                     type="button"
                     onClick={() => setProfesorSeleccionado(prof)}
-                    className="font-label-md text-[12px] font-semibold text-on-surface-variant hover:text-primary inline-flex items-center gap-1 transition-colors cursor-pointer"
+                    className="font-label-md text-[12px] font-semibold text-on-surface-variant hover:text-primary inline-flex items-center gap-1 transition-colors cursor-pointer py-1"
                   >
                     <Icon className="text-[16px] text-primary">calendar_month</Icon>
-                    <span>Ver Horarios ({prof.horarios.length})</span>
+                    <span>Horarios ({prof.horarios.length})</span>
                   </button>
                   <Button
                     variant="primary"
@@ -588,15 +590,15 @@ function BuscarTutoriasContent() {
 
       {/* Franjas Horarias Seleccionables del Profesor (Sección 04) */}
       {profesorSeleccionado && (
-        <SurfaceCard tone="lowest" className="p-space-lg space-y-space-md">
-          <div className="flex justify-between items-start gap-4 pb-3 border-b border-surface-container">
-            <div>
+        <SurfaceCard tone="lowest" className="p-4 sm:p-space-lg space-y-space-md">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 pb-3 border-b border-surface-container">
+            <div className="min-w-0">
               <span className="font-label-md text-[11px] text-outline font-semibold uppercase tracking-wider block">
                 Seleccionar Franja Horaria
               </span>
-              <h3 className="text-lg font-bold text-on-surface flex items-center gap-2 mt-0.5">
+              <h3 className="text-base sm:text-lg font-bold text-on-surface flex items-center gap-2 mt-0.5">
                 <Icon className="text-primary text-[20px]">event_available</Icon>
-                <span>{profesorSeleccionado.nombre}</span>
+                <span className="break-words">{profesorSeleccionado.nombre}</span>
               </h3>
               <p className="text-xs text-on-surface-variant mt-0.5">
                 Haz clic en una franja horaria disponible para agendar tu tutoría directamente.
@@ -606,6 +608,7 @@ function BuscarTutoriasContent() {
               variant="subtle"
               size="sm"
               onClick={() => setProfesorSeleccionado(null)}
+              className="self-start"
             >
               <Icon className="text-[16px]">close</Icon>
               <span>Cerrar</span>
@@ -626,9 +629,9 @@ function BuscarTutoriasContent() {
                   onClick={() => abrirSolicitud(profesorSeleccionado, h)}
                   className="py-2.5 px-3 rounded-lg bg-surface-container hover:bg-primary-fixed hover:text-primary transition-all text-on-surface font-label-md text-[12px] font-semibold flex items-center justify-between gap-2 cursor-pointer group active:scale-[0.98]"
                 >
-                  <span className="flex items-center gap-1.5">
+                  <span className="flex items-center gap-1.5 min-w-0">
                     <Icon className="text-[16px] text-primary">schedule</Icon>
-                    <span>
+                    <span className="truncate">
                       {h.dia} {h.horaInicio} - {h.horaFin}
                     </span>
                   </span>
@@ -647,7 +650,11 @@ function BuscarTutoriasContent() {
         open={Boolean(modalSolicitud)}
         onClose={() => setModalSolicitud(null)}
         title={`Solicitar Tutoría a ${modalSolicitud?.profesor.nombre || ''}`}
-        subtitle={modalSolicitud?.profesor.carrera || modalSolicitud?.profesor.escuela || 'Sesión Académica'}
+        subtitle={
+          modalSolicitud?.profesor.carrera ||
+          modalSolicitud?.profesor.escuela ||
+          'Sesión Académica'
+        }
         icon="calendar_add_on"
         tone="primary"
         footer={

@@ -220,12 +220,12 @@ export default function MisTutoriasProfesorPage() {
               as="article"
               tone="lowest"
               interactive
-              className="p-space-lg space-y-4"
+              className="p-4 sm:p-space-lg space-y-4"
             >
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
-                <div className="space-y-1.5">
+                <div className="space-y-1.5 min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="font-label-md text-base font-bold text-on-surface group-hover:text-primary transition-colors">
+                    <h3 className="font-label-md text-base font-bold text-on-surface group-hover:text-primary transition-colors break-words">
                       {tutoria.materia} {tutoria.tema ? `• ${tutoria.tema}` : ''}
                     </h3>
                     <Badge variant="primary" pill={false} className="capitalize">
@@ -242,8 +242,8 @@ export default function MisTutoriasProfesorPage() {
                     </Badge>
                   </div>
 
-                  <p className="text-xs text-on-surface-variant flex items-center gap-1.5">
-                    <Icon className="text-[15px] text-outline">schedule</Icon>
+                  <p className="text-xs text-on-surface-variant flex flex-wrap items-center gap-1.5">
+                    <Icon className="text-[15px] text-outline shrink-0">schedule</Icon>
                     <span>Horario:</span>
                     <strong className="font-semibold text-on-surface">
                       {tutoria.hora || 'N/A'}
@@ -254,7 +254,7 @@ export default function MisTutoriasProfesorPage() {
                 <Badge
                   variant={tutoria.estado === 'finalizada' ? 'success' : 'primary'}
                   dot
-                  className="capitalize self-start"
+                  className="capitalize self-start shrink-0"
                 >
                   {tutoria.estado}
                 </Badge>
@@ -271,7 +271,7 @@ export default function MisTutoriasProfesorPage() {
               )}
 
               {/* Lista de Asistencia */}
-              <div className="p-space-md rounded-xl bg-surface-container-low space-y-2.5">
+              <div className="p-3.5 sm:p-space-md rounded-xl bg-surface-container-low space-y-2.5">
                 <p className="font-label-md text-xs font-bold text-on-surface flex items-center gap-1.5">
                   <Icon className="text-[16px] text-primary">fact_check</Icon>
                   <span>Registro de Asistencia</span>
@@ -279,15 +279,19 @@ export default function MisTutoriasProfesorPage() {
 
                 <div className="divide-y divide-surface-container-highest">
                   {tutoria.estudiante && (
-                    <div className="py-2 flex items-center justify-between gap-2 text-xs">
+                    <div className="py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
                       <div className="flex items-center gap-2.5 min-w-0">
                         <div className="w-7 h-7 rounded-full bg-primary-fixed text-primary font-bold text-[11px] flex items-center justify-center shrink-0">
                           {getInitials(tutoria.estudiante.nombre)}
                         </div>
-                        <span className="truncate text-on-surface font-medium">
-                          {tutoria.estudiante.nombre}{' '}
-                          <span className="text-outline">({tutoria.estudiante.email})</span>
-                        </span>
+                        <div className="min-w-0">
+                          <span className="block truncate text-on-surface font-medium">
+                            {tutoria.estudiante.nombre}
+                          </span>
+                          <span className="block truncate text-outline text-[11px]">
+                            {tutoria.estudiante.email}
+                          </span>
+                        </div>
                       </div>
 
                       <Badge
@@ -298,6 +302,7 @@ export default function MisTutoriasProfesorPage() {
                             ? 'error'
                             : 'neutral'
                         }
+                        className="self-start sm:self-auto shrink-0"
                       >
                         {tutoria.asistenciaEstudiante === true
                           ? 'Asistió'
@@ -311,16 +316,20 @@ export default function MisTutoriasProfesorPage() {
                   {tutoria.participantes?.map((p) => (
                     <div
                       key={p.estudiante._id}
-                      className="py-2 flex items-center justify-between gap-2 text-xs"
+                      className="py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs"
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
                         <div className="w-7 h-7 rounded-full bg-secondary-fixed text-secondary font-bold text-[11px] flex items-center justify-center shrink-0">
                           {getInitials(p.estudiante.nombre)}
                         </div>
-                        <span className="truncate text-on-surface font-medium">
-                          {p.estudiante.nombre}{' '}
-                          <span className="text-outline">({p.estudiante.email})</span>
-                        </span>
+                        <div className="min-w-0">
+                          <span className="block truncate text-on-surface font-medium">
+                            {p.estudiante.nombre}
+                          </span>
+                          <span className="block truncate text-outline text-[11px]">
+                            {p.estudiante.email}
+                          </span>
+                        </div>
                       </div>
 
                       <Badge
@@ -331,6 +340,7 @@ export default function MisTutoriasProfesorPage() {
                             ? 'error'
                             : 'neutral'
                         }
+                        className="self-start sm:self-auto shrink-0"
                       >
                         {p.asistio === true
                           ? 'Asistió'

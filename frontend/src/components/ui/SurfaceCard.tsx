@@ -28,7 +28,7 @@ export function SurfaceCard({
 }: SurfaceCardProps) {
   return (
     <Component
-      className={`rounded-xl transition-all ${TONE_CLASSES[tone]} ${
+      className={`rounded-xl min-w-0 transition-all ${TONE_CLASSES[tone]} ${
         interactive ? 'hover:shadow-md group' : ''
       } ${className}`.trim()}
       {...props}

@@ -75,7 +75,7 @@ export default function AdminReportesPage() {
       {/* KPI Metric Cards Canónicas (Sección 05 de code.html) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-space-md">
         {/* Usuarios Registrados */}
-        <SurfaceCard tone="lowest" className="p-space-lg flex flex-col justify-between gap-4">
+        <SurfaceCard tone="lowest" className="p-4 sm:p-space-lg flex flex-col justify-between gap-4">
           <div className="flex items-start justify-between gap-3">
             <div>
               <span className="font-label-md text-[12px] uppercase text-outline font-semibold tracking-wider block">
@@ -93,7 +93,7 @@ export default function AdminReportesPage() {
             </div>
           </div>
 
-          <div className="p-space-sm rounded-lg bg-surface-container-low flex items-center justify-between text-xs font-label-md">
+          <div className="p-space-sm rounded-lg bg-surface-container-low flex flex-wrap items-center justify-between gap-2 text-xs font-label-md">
             <span className="flex items-center gap-1.5 text-on-surface">
               <Icon className="text-[15px] text-primary">school</Icon>
               <span>Estudiantes: <strong>{reporte?.totalEstudiantes || 0}</strong></span>
@@ -106,13 +106,13 @@ export default function AdminReportesPage() {
         </SurfaceCard>
 
         {/* Solicitudes Totales */}
-        <SurfaceCard tone="lowest" className="p-space-lg flex flex-col justify-between gap-4">
+        <SurfaceCard tone="lowest" className="p-4 sm:p-space-lg flex flex-col justify-between gap-4">
           <div className="flex items-start justify-between gap-3">
             <div>
               <span className="font-label-md text-[12px] uppercase text-outline font-semibold tracking-wider block">
                 Solicitudes Totales
               </span>
-              <div className="flex items-baseline gap-2 mt-1">
+              <div className="flex flex-wrap items-baseline gap-2 mt-1">
                 <span className="font-headline-lg text-headline-lg font-bold text-on-surface">
                   {reporte?.totalTutorias || 0}
                 </span>
@@ -126,7 +126,7 @@ export default function AdminReportesPage() {
             </div>
           </div>
 
-          <div className="p-space-sm rounded-lg bg-surface-container-low flex items-center justify-between text-xs font-label-md text-on-surface-variant">
+          <div className="p-space-sm rounded-lg bg-surface-container-low flex flex-wrap items-center justify-between gap-2 text-xs font-label-md text-on-surface-variant">
             <span>Pendientes por atender:</span>
             <strong className="text-tertiary font-bold">
               {reporte?.tutoriasPendientes || 0} solicitudes
@@ -135,7 +135,7 @@ export default function AdminReportesPage() {
         </SurfaceCard>
 
         {/* Tutorías Completadas */}
-        <SurfaceCard tone="lowest" className="p-space-lg flex flex-col justify-between gap-4">
+        <SurfaceCard tone="lowest" className="p-4 sm:p-space-lg flex flex-col justify-between gap-4">
           <div className="flex items-start justify-between gap-3">
             <div>
               <span className="font-label-md text-[12px] uppercase text-outline font-semibold tracking-wider block">
@@ -156,7 +156,7 @@ export default function AdminReportesPage() {
             </div>
           </div>
 
-          <div className="p-space-sm rounded-lg bg-surface-container-low flex items-center justify-between text-xs font-label-md text-on-surface-variant">
+          <div className="p-space-sm rounded-lg bg-surface-container-low flex flex-wrap items-center justify-between gap-2 text-xs font-label-md text-on-surface-variant">
             <span>En curso (aceptadas):</span>
             <strong className="text-primary font-bold">
               {reporte?.tutoriasAceptadas || 0} sesiones
@@ -166,7 +166,7 @@ export default function AdminReportesPage() {
       </div>
 
       {/* Distribución Operativa de Sesiones */}
-      <SurfaceCard tone="lowest" className="p-space-lg space-y-space-md">
+      <SurfaceCard tone="lowest" className="p-4 sm:p-space-lg space-y-space-md">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-surface-container">
           <div>
             <h2 className="font-label-md text-base font-bold text-on-surface flex items-center gap-2">

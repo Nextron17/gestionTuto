@@ -97,7 +97,7 @@ export default function RecursosEstudiantePage() {
   }
 
   return (
-    <div className="space-y-space-lg max-w-6xl mx-auto">
+    <div className="space-y-space-lg max-w-6xl mx-auto min-w-0">
       <PageHeader
         eyebrow="04. Biblioteca Digital"
         title="Recursos de Estudio por Escuela"
@@ -115,24 +115,24 @@ export default function RecursosEstudiantePage() {
       />
 
       {/* Selector de Escuela con Chips Canónicos (Sección 04) */}
-      <SurfaceCard tone="lowest" className="p-space-md space-y-space-sm">
+      <SurfaceCard tone="lowest" className="p-4 sm:p-space-md space-y-space-sm">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <span className="font-label-md text-[11px] font-semibold text-outline uppercase tracking-wider">
             Filtrar por Escuela o Facultad
           </span>
           {miEscuela && (
-            <Badge variant="primary">
+            <Badge variant="primary" className="max-w-full">
               <Icon className="text-[14px]">school</Icon>
-              <span>Tu escuela: {miEscuela}</span>
+              <span className="truncate">Tu escuela: {miEscuela}</span>
             </Badge>
           )}
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1.5 sm:gap-2">
           <button
             type="button"
             onClick={() => seleccionarEscuela('todas')}
-            className={`px-3.5 py-2 rounded-lg font-label-md text-[12px] font-semibold transition-all cursor-pointer active:scale-[0.98] ${
+            className={`px-3 sm:px-3.5 py-2 rounded-lg font-label-md text-[12px] font-semibold transition-all cursor-pointer active:scale-[0.98] ${
               escuelaSeleccionada === 'todas'
                 ? 'bg-primary text-on-primary shadow-sm'
                 : 'bg-surface-container text-on-surface hover:bg-primary-fixed hover:text-primary'
@@ -146,7 +146,7 @@ export default function RecursosEstudiantePage() {
               key={esc._id}
               type="button"
               onClick={() => seleccionarEscuela(esc.nombre)}
-              className={`px-3.5 py-2 rounded-lg font-label-md text-[12px] font-semibold transition-all cursor-pointer active:scale-[0.98] ${
+              className={`px-3 sm:px-3.5 py-2 rounded-lg font-label-md text-[12px] font-semibold transition-all cursor-pointer active:scale-[0.98] text-left ${
                 escuelaSeleccionada === esc.nombre
                   ? 'bg-primary text-on-primary shadow-sm'
                   : 'bg-surface-container text-on-surface hover:bg-primary-fixed hover:text-primary'
@@ -159,30 +159,30 @@ export default function RecursosEstudiantePage() {
       </SurfaceCard>
 
       {/* Listado de Recursos */}
-      <section className="space-y-space-md">
+      <section className="space-y-space-md min-w-0">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-          <h2 className="text-xl font-semibold text-on-surface flex items-center gap-2">
+          <h2 className="text-lg sm:text-xl font-semibold text-on-surface flex items-center gap-2 min-w-0">
             <Icon className="text-primary text-[22px]">library_books</Icon>
-            <span>
+            <span className="break-words">
               {escuelaSeleccionada === 'todas'
                 ? 'Repositorio General • Todas las Escuelas'
                 : `Repositorio • ${escuelaSeleccionada}`}
             </span>
           </h2>
-          <Badge variant="neutral">
+          <Badge variant="neutral" className="self-start sm:self-auto">
             {filtrados.length} {filtrados.length === 1 ? 'documento' : 'documentos'}
           </Badge>
         </div>
 
         {filtrados.length === 0 ? (
-          <SurfaceCard tone="lowest" className="p-10 text-center space-y-2">
+          <SurfaceCard tone="lowest" className="p-8 sm:p-10 text-center space-y-2">
             <Icon className="text-outline text-[36px]">folder_off</Icon>
             <p className="text-sm text-on-surface-variant">
               No hay recursos disponibles para esta escuela con ese criterio.
             </p>
           </SurfaceCard>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-space-md">
             {filtrados.map((r) => (
               <SurfaceCard
                 key={r._id}
@@ -191,9 +191,9 @@ export default function RecursosEstudiantePage() {
                 interactive
                 className="overflow-hidden flex flex-col justify-between"
               >
-                <div className="p-space-md space-y-2.5">
+                <div className="p-4 sm:p-space-md space-y-2.5 min-w-0">
                   <div className="flex items-start justify-between gap-2">
-                    <div className="flex flex-wrap items-center gap-1.5">
+                    <div className="flex flex-wrap items-center gap-1.5 min-w-0">
                       <Badge variant="primary" pill={false}>
                         {r.escuela || 'General'}
                       </Badge>
@@ -208,12 +208,12 @@ export default function RecursosEstudiantePage() {
                     </div>
                   </div>
 
-                  <h3 className="font-label-md text-[15px] font-bold text-on-surface group-hover:text-primary transition-colors">
+                  <h3 className="font-label-md text-[15px] font-bold text-on-surface group-hover:text-primary transition-colors break-words">
                     {r.titulo}
                   </h3>
 
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-on-surface-variant">
-                    <span className="inline-flex items-center gap-1 font-medium text-primary">
+                    <span className="inline-flex items-center gap-1 font-medium text-primary break-words">
                       <Icon className="text-[15px]">menu_book</Icon>
                       <span>
                         {r.materia} {r.tema ? `• ${r.tema}` : ''}
@@ -228,12 +228,12 @@ export default function RecursosEstudiantePage() {
                   </div>
                 </div>
 
-                <div className="px-space-md py-3 bg-surface-container-low flex items-center justify-between gap-3">
+                <div className="px-4 sm:px-space-md py-3 bg-surface-container-low flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 min-w-0">
                   <a
                     href={r.link}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-xs text-outline hover:text-primary truncate font-mono"
+                    className="text-xs text-outline hover:text-primary truncate font-mono min-w-0"
                   >
                     {r.link}
                   </a>

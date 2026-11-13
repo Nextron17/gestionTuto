@@ -242,7 +242,7 @@ export default function AdminUsuariosPage() {
         title="Gestión de Usuarios"
         description="Crea cuentas institucionales y administra la asignación académica de docentes y estudiantes."
         actions={
-          <Button variant="primary" onClick={abrirModalCrear}>
+          <Button variant="primary" onClick={abrirModalCrear} className="w-full sm:w-auto">
             <Icon className="text-[18px]">person_add</Icon>
             <span>Crear Usuario</span>
           </Button>
@@ -250,8 +250,8 @@ export default function AdminUsuariosPage() {
       />
 
       {/* Barra de Búsqueda y Filtros por Rol */}
-      <SurfaceCard tone="lowest" className="p-space-md flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex-1 max-w-md">
+      <SurfaceCard tone="lowest" className="p-4 sm:p-space-md flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="w-full md:flex-1 md:max-w-md">
           <SearchInput
             placeholder="Buscar por nombre, correo, escuela o carrera..."
             value={busqueda}
@@ -309,7 +309,149 @@ export default function AdminUsuariosPage() {
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto">
+            {/* Vista Mobile: Tarjetas de Usuarios (< md) */}
+            <div className="md:hidden divide-y divide-surface-container">
+              {usuariosFiltrados.map((u) => {
+                const avatarClass =
+                  u.rol === 'profesor'
+                    ? 'bg-tertiary-fixed text-on-tertiary-fixed'
+                    : u.rol === 'admin'
+                    ? 'bg-surface-container-highest text-on-surface'
+                    : 'bg-primary-fixed text-primary';
+
+                return (
+                  <div key={u._id} className="p-4 space-y-3 hover:bg-surface-container-low/60 transition-colors">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div
+                          className={`w-10 h-10 rounded-full font-bold flex items-center justify-center text-xs shrink-0 ${avatarClass}`}
+                        >
+                          {getInitials(u.nombre)}
+                        </div>
+                        <div className="min-w-0">
+                          <span className="block font-semibold text-on-surface font-label-md text-sm truncate">
+                            {u.nombre}
+                          </span>
+                          <span className="block text-outline text-xs truncate">
+                            {u.email}
+                          </span>
+                        </div>
+                      </div>
+
+                      {u.rol === 'admin' ? (
+                        <Badge variant="high" className="shrink-0">
+                          <Icon className="text-[14px]">shield_person</Icon>
+                          <span>Admin</span>
+                        </Badge>
+                      ) : u.rol === 'profesor' ? (
+                        <Badge variant="tertiary" className="shrink-0">
+                          <Icon className="text-[14px]">psychology</Icon>
+                          <span>Docente</span>
+                        </Badge>
+                      ) : (
+                        <Badge variant="primary" className="shrink-0">
+                          <Icon className="text-[14px]">school</Icon>
+                          <span>Estudiante</span>
+                        </Badge>
+                      )}
+                    </div>
+
+                    {/* Asignación académica */}
+                    <div className="p-3 rounded-xl bg-surface-container-low text-xs text-on-surface-variant space-y-1.5">
+                      {u.rol === 'admin' && (
+                        <span className="text-outline italic flex items-center gap-1.5">
+                          <Icon className="text-[14px] text-primary">verified_user</Icon>
+                          <span>Acceso administrativo completo</span>
+                        </span>
+                      )}
+
+                      {u.rol === 'profesor' && (
+                        <>
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span className="text-on-surface font-semibold">
+                              {u.escuela || 'Escuela sin asignar'}
+                            </span>
+                            <span className="text-outline">•</span>
+                            <span>{u.carrera || 'Carrera sin asignar'}</span>
+                          </div>
+                          {u.materias && u.materias.length > 0 ? (
+                            <div className="flex flex-wrap gap-1 pt-0.5">
+                              {u.materias.map((mat, i) => (
+                                <span
+                                  key={i}
+                                  className="px-2 py-0.5 rounded bg-surface-container-lowest text-on-surface-variant font-label-md text-[11px]"
+                                >
+                                  {mat}
+                                </span>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-outline text-[11px] block">
+                              Sin materias asignadas
+                            </span>
+                          )}
+                        </>
+                      )}
+
+                      {u.rol === 'estudiante' && (
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <span className="font-medium text-on-surface">
+                            {u.carrera || 'Carrera no especificada'}
+                          </span>
+                          {u.semestre && (
+                            <span className="text-outline text-[11px] font-mono">
+                              Semestre {u.semestre}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Acciones rápidas en mobile */}
+                    {u.rol !== 'admin' && (
+                      <div className="flex items-center justify-between gap-2 pt-1">
+                        <div className="relative inline-flex items-center">
+                          <select
+                            value={u.rol}
+                            onChange={(e) => cambiarRolRapido(u._id, e.target.value)}
+                            aria-label={`Cambiar rol de ${u.nombre}`}
+                            className="py-1.5 pl-2.5 pr-7 rounded-lg bg-surface-container text-on-surface-variant font-label-md text-xs appearance-none cursor-pointer hover:bg-surface-container-highest focus:outline-none focus:ring-1 focus:ring-primary"
+                          >
+                            <option value="estudiante">Rol: Estudiante</option>
+                            <option value="profesor">Rol: Profesor</option>
+                          </select>
+                          <Icon className="absolute right-1.5 text-[15px] text-outline pointer-events-none">
+                            expand_more
+                          </Icon>
+                        </div>
+
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => abrirModalEditar(u)}
+                            className="px-2.5 py-1.5 rounded-lg bg-surface-container hover:bg-primary-fixed text-on-surface-variant hover:text-primary font-label-md text-xs font-semibold inline-flex items-center gap-1 transition-colors cursor-pointer"
+                          >
+                            <Icon className="text-[16px]">edit</Icon>
+                            <span>Editar</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setUsuarioAEliminar(u)}
+                            className="p-1.5 rounded-lg bg-surface-container hover:bg-error-container text-outline hover:text-error inline-flex items-center justify-center transition-colors cursor-pointer"
+                            title="Eliminar Usuario"
+                          >
+                            <Icon className="text-[16px]">delete</Icon>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Vista Desktop: Tabla Canónica (md+) */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left font-body-md text-body-md">
                 <thead>
                   <tr className="bg-surface-container-low text-outline font-label-md text-[11px] uppercase tracking-wider">
@@ -477,7 +619,7 @@ export default function AdminUsuariosPage() {
               </table>
             </div>
 
-            <div className="px-space-md py-3 bg-surface-container-low flex items-center justify-between font-label-md text-[12px] text-outline">
+            <div className="px-4 sm:px-space-md py-3 bg-surface-container-low flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 font-label-md text-[12px] text-outline">
               <span>
                 Mostrando {usuariosFiltrados.length} de {usuarios.length} registros
               </span>

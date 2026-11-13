@@ -173,7 +173,7 @@ export default function RecursosProfesorPage() {
       </SurfaceCard>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-space-md">
-        <SurfaceCard tone="lowest" className="p-space-lg space-y-space-md h-fit">
+        <SurfaceCard tone="lowest" className="p-4 sm:p-space-lg space-y-space-md h-fit">
           <div>
             <h2 className="font-label-md text-base font-bold text-on-surface flex items-center gap-2">
               <Icon className="text-primary text-[20px]">upload_file</Icon>
@@ -248,17 +248,17 @@ export default function RecursosProfesorPage() {
           </form>
         </SurfaceCard>
 
-        <SurfaceCard tone="lowest" className="p-space-lg lg:col-span-2 space-y-space-md">
-          <div className="flex justify-between items-center pb-2 border-b border-surface-container">
-            <h2 className="font-label-md text-base font-bold text-on-surface flex items-center gap-2">
-              <Icon className="text-primary text-[20px]">library_books</Icon>
-              <span>
+        <SurfaceCard tone="lowest" className="p-4 sm:p-space-lg lg:col-span-2 space-y-space-md">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 pb-2 border-b border-surface-container">
+            <h2 className="font-label-md text-base font-bold text-on-surface flex items-center gap-2 min-w-0">
+              <Icon className="text-primary text-[20px] shrink-0">library_books</Icon>
+              <span className="truncate">
                 {escuelaFiltro === 'todas'
                   ? 'Todos los Materiales Publicados'
                   : `Materiales • ${escuelaFiltro}`}
               </span>
             </h2>
-            <Badge variant="neutral">
+            <Badge variant="neutral" className="self-start sm:self-auto shrink-0">
               {recursosFiltrados.length}{' '}
               {recursosFiltrados.length === 1 ? 'recurso' : 'recursos'}
             </Badge>
@@ -270,7 +270,7 @@ export default function RecursosProfesorPage() {
               <span>Cargando recursos...</span>
             </div>
           ) : recursosFiltrados.length === 0 ? (
-            <div className="p-10 rounded-xl bg-surface-container-low text-center space-y-2">
+            <div className="p-8 sm:p-10 rounded-xl bg-surface-container-low text-center space-y-2">
               <Icon className="text-outline text-[36px]">folder_off</Icon>
               <p className="text-sm text-on-surface-variant">
                 No hay materiales publicados para esta escuela aún.
@@ -281,7 +281,7 @@ export default function RecursosProfesorPage() {
               {recursosFiltrados.map((r) => (
                 <div
                   key={r._id}
-                  className="p-space-md bg-surface-container-low hover:bg-surface-container rounded-xl transition-colors flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4"
+                  className="p-3.5 sm:p-space-md bg-surface-container-low hover:bg-surface-container rounded-xl transition-colors flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3.5"
                 >
                   <div className="space-y-1.5 min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-1.5">
@@ -294,10 +294,12 @@ export default function RecursosProfesorPage() {
                         </Badge>
                       )}
                     </div>
-                    <h4 className="font-label-md text-sm font-bold text-on-surface">{r.titulo}</h4>
-                    <p className="text-xs text-primary font-semibold flex items-center gap-1">
-                      <Icon className="text-[14px]">menu_book</Icon>
-                      <span>
+                    <h4 className="font-label-md text-sm font-bold text-on-surface break-words">
+                      {r.titulo}
+                    </h4>
+                    <p className="text-xs text-primary font-semibold flex flex-wrap items-center gap-1">
+                      <Icon className="text-[14px] shrink-0">menu_book</Icon>
+                      <span className="break-words">
                         {r.materia} {r.tema ? `• ${r.tema}` : ''}{' '}
                         {r.profesor ? `• Por ${r.profesor.nombre}` : ''}
                       </span>
@@ -306,7 +308,7 @@ export default function RecursosProfesorPage() {
                       href={r.link}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-xs text-outline hover:text-primary underline truncate block max-w-md font-mono"
+                      className="text-xs text-outline hover:text-primary underline truncate block font-mono"
                     >
                       {r.link}
                     </a>
@@ -316,7 +318,7 @@ export default function RecursosProfesorPage() {
                     href={r.link}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center justify-center gap-1.5 bg-primary hover:bg-primary-container text-on-primary font-label-md text-xs px-3.5 py-2 rounded-lg font-semibold shadow-sm active:scale-[0.98] transition-all self-start sm:self-center shrink-0"
+                    className="inline-flex items-center justify-center gap-1.5 bg-primary hover:bg-primary-container text-on-primary font-label-md text-xs px-3.5 py-2.5 sm:py-2 rounded-lg font-semibold shadow-sm active:scale-[0.98] transition-all w-full sm:w-auto sm:self-center shrink-0"
                   >
                     <Icon className="text-[16px]">open_in_new</Icon>
                     <span>Abrir</span>

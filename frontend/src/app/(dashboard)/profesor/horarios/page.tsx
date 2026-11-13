@@ -83,7 +83,7 @@ export default function HorariosPage() {
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-space-md">
-        <SurfaceCard tone="lowest" className="p-space-lg space-y-space-md h-fit">
+        <SurfaceCard tone="lowest" className="p-4 sm:p-space-lg space-y-space-md h-fit">
           <div>
             <h2 className="font-label-md text-base font-bold text-on-surface flex items-center gap-2">
               <Icon className="text-primary text-[20px]">calendar_add_on</Icon>
@@ -137,18 +137,20 @@ export default function HorariosPage() {
           </form>
         </SurfaceCard>
 
-        <SurfaceCard tone="lowest" className="p-space-lg lg:col-span-2 space-y-space-md">
-          <div className="flex items-center justify-between pb-2 border-b border-surface-container">
-            <div>
+        <SurfaceCard tone="lowest" className="p-4 sm:p-space-lg lg:col-span-2 space-y-space-md">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-surface-container">
+            <div className="min-w-0">
               <h2 className="font-label-md text-base font-bold text-on-surface flex items-center gap-2">
-                <Icon className="text-primary text-[20px]">event_available</Icon>
+                <Icon className="text-primary text-[20px] shrink-0">event_available</Icon>
                 <span>Horarios Registrados</span>
               </h2>
               <p className="text-xs text-on-surface-variant mt-0.5">
                 Estas franjas son visibles para los estudiantes en el buscador de tutorías.
               </p>
             </div>
-            <Badge variant="neutral">{horarios.length} bloques</Badge>
+            <Badge variant="neutral" className="self-start sm:self-auto shrink-0">
+              {horarios.length} bloques
+            </Badge>
           </div>
 
           {horarios.length === 0 ? (

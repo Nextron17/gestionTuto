@@ -51,15 +51,15 @@ export function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-on-background/25 backdrop-blur-[2px]"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-on-background/30 backdrop-blur-[2px]"
       role="dialog"
       aria-modal="true"
     >
       <div
-        className={`relative z-10 w-full ${maxWidthClassName} bg-surface-container-lowest rounded-xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]`}
+        className={`relative z-10 w-full ${maxWidthClassName} bg-surface-container-lowest rounded-xl shadow-xl overflow-hidden flex flex-col max-h-[92svh]`}
       >
         {/* Modal Header */}
-        <div className="px-space-md py-3.5 bg-surface-container-low flex items-center justify-between gap-3 shrink-0">
+        <div className="px-4 sm:px-space-md py-3 sm:py-3.5 bg-surface-container-low flex items-center justify-between gap-2.5 shrink-0">
           <div className="flex items-center gap-2.5 min-w-0">
             <div
               className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${ICON_CONTAINER_CLASSES[tone]}`}
@@ -67,7 +67,7 @@ export function Modal({
               <Icon className="text-[18px]">{modalIcon}</Icon>
             </div>
             <div className="min-w-0">
-              <h3 className="font-label-md text-label-md font-bold text-on-surface truncate">
+              <h3 className="font-label-md text-xs sm:text-label-md font-bold text-on-surface leading-snug break-words">
                 {title}
               </h3>
               {subtitle && (
@@ -86,11 +86,11 @@ export function Modal({
         </div>
 
         {/* Modal Body */}
-        <div className="p-space-md space-y-space-sm overflow-y-auto">{children}</div>
+        <div className="p-4 sm:p-space-md space-y-space-sm overflow-y-auto">{children}</div>
 
         {/* Modal Footer */}
         {footer && (
-          <div className="px-space-md py-3 bg-surface-container-low flex items-center justify-end gap-2 shrink-0">
+          <div className="px-4 sm:px-space-md py-3 bg-surface-container-low flex flex-wrap items-center justify-end gap-2 shrink-0">
             {footer}
           </div>
         )}
@@ -98,4 +98,3 @@ export function Modal({
     </div>
   );
 }
-

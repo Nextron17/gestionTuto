@@ -62,20 +62,19 @@ export function CalloutBanner({
 
   return (
     <div
-      className={`p-space-md rounded-xl flex items-start gap-3 ${style.container} ${className}`.trim()}
+      className={`p-3.5 sm:p-space-md rounded-xl flex items-start gap-2.5 sm:gap-3 min-w-0 ${style.container} ${className}`.trim()}
     >
       <Icon className={`text-[20px] shrink-0 mt-0.5 ${style.iconColor}`}>{resolvedIcon}</Icon>
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 break-words">
         {title && (
-          <h5 className={`font-label-md text-label-md font-bold mb-0.5 ${style.titleColor}`}>
+          <h5 className={`font-label-md text-xs sm:text-label-md font-bold mb-0.5 ${style.titleColor}`}>
             {title}
           </h5>
         )}
-        <div className="font-body-md text-[12px] text-on-surface-variant leading-relaxed">
+        <div className="font-body-md text-[12px] text-on-surface-variant leading-relaxed break-words">
           {children}
         </div>
       </div>
     </div>
   );
 }
-
