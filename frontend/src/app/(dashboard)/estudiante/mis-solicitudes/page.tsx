@@ -8,106 +8,16 @@ import { Icon } from '../../../../components/ui/Icon';
 import { PageHeader } from '../../../../components/ui/PageHeader';
 import { SearchInput } from '../../../../components/ui/SearchInput';
 import { SurfaceCard } from '../../../../components/ui/SurfaceCard';
-import { Badge } from '../../../../components/ui/Badge';
 import { Button } from '../../../../components/ui/Button';
 import { CalloutBanner } from '../../../../components/ui/CalloutBanner';
-import { Modal } from '../../../../components/ui/Modal';
-import { FormTextarea } from '../../../../components/ui/FormField';
-
-interface Solicitud {
-  _id: string;
-  materia: string;
-  tema?: string;
-  descripcion: string;
-  hora?: string;
-  fechaPropuesta?: string;
-  fechaRespuestaProfesor?: string;
-  fechaCancelacion?: string;
-  modalidad?: string;
-  tipo?: string;
-  lugar?: string;
-  enlaceReunion?: string;
-  comentarioProfesor?: string;
-  motivoCancelacion?: string;
-  canceladaPor?: 'estudiante' | 'profesor';
-  estado: string;
-  createdAt?: string;
-  updatedAt?: string;
-  estudiante?: {
-    nombre: string;
-    email?: string;
-  };
-  profesor?: {
-    nombre: string;
-    email: string;
-  };
-}
-
-interface CambioEstadoNotificacion {
-  id: string;
-  materia: string;
-  tema?: string;
-  estadoAnterior: string;
-  estadoNuevo: string;
-}
-
-const ETIQUETAS_ESTADO: Record<string, string> = {
-  pendiente: 'Pendiente',
-  aceptada: 'Aceptada',
-  aplazada: 'Aplazada',
-  cancelada: 'Cancelada',
-  finalizada: 'Finalizada',
-};
-
-function formatearFecha(fechaIso?: string): string | null {
-  if (!fechaIso) return null;
-  const parsed = new Date(fechaIso);
-  if (Number.isNaN(parsed.getTime())) return null;
-  return parsed.toLocaleString('es-CO', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  });
-}
-
-function renderEstadoCita(estado: string) {
-  if (estado === 'pendiente') {
-    return (
-      <Badge variant="warning" pulseDot>
-        Pendiente de confirmación
-      </Badge>
-    );
-  }
-  if (estado === 'aceptada') {
-    return (
-      <Badge variant="success">
-        <Icon className="text-[15px] text-[#16a34a]">check_circle</Icon>
-        <span>Aceptada y Agendada</span>
-      </Badge>
-    );
-  }
-  if (estado === 'aplazada') {
-    return (
-      <Badge variant="primary">
-        <Icon className="text-[15px] text-primary">event_repeat</Icon>
-        <span>Aplazada por Docente</span>
-      </Badge>
-    );
-  }
-  if (estado === 'finalizada') {
-    return (
-      <Badge variant="secondary">
-        <Icon className="text-[15px]">task_alt</Icon>
-        <span>Finalizada</span>
-      </Badge>
-    );
-  }
-  return (
-    <Badge variant="error">
-      <Icon className="text-[15px] text-error">cancel</Icon>
-      <span>Cancelada</span>
-    </Badge>
-  );
-}
+import {
+  CambioEstadoNotificacion,
+  ETIQUETAS_ESTADO,
+  Solicitud,
+  notificarCambioEstadoTutoria,
+} from '../../../../components/estudiante/mis-solicitudes/types';
+import { TarjetaSolicitudEstudiante } from '../../../../components/estudiante/mis-solicitudes/TarjetaSolicitudEstudiante';
+import { ModalCancelarSolicitudEstudiante } from '../../../../components/estudiante/mis-solicitudes/ModalCancelarSolicitudEstudiante';
 
 export default function MisSolicitudesPage() {
   const { user } = useAuth();
@@ -192,12 +102,10 @@ export default function MisSolicitudesPage() {
     };
     cargarInicial();
 
-    // Polling frecuente para reflejar apenas el profesor responda desde cualquier dispositivo
     const intervalId = setInterval(() => {
       cargarSolicitudesAPI();
     }, 4000);
 
-    // Sincronización instantánea entre pestañas/ventanas cuando el profesor responde
     let channel: BroadcastChannel | null = null;
     if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
       channel = new BroadcastChannel('gestiontuto_solicitudes_sync');
@@ -233,25 +141,6 @@ export default function MisSolicitudesPage() {
       document.removeEventListener('visibilitychange', onFocusOrVisible);
     };
   }, [cargarSolicitudesAPI]);
-
-  const notificarCambioEstadoTutoria = (solicitudId: string, nuevoEstado: string) => {
-    if (typeof window === 'undefined') return;
-    const payload = { solicitudId, estado: nuevoEstado, timestamp: Date.now() };
-    try {
-      if ('BroadcastChannel' in window) {
-        const channel = new BroadcastChannel('gestiontuto_solicitudes_sync');
-        channel.postMessage(payload);
-        channel.close();
-      }
-    } catch {
-      // Ignorar si BroadcastChannel no está disponible
-    }
-    try {
-      window.localStorage.setItem('gestiontuto_last_tutoria_update', JSON.stringify(payload));
-    } catch {
-      // Ignorar errores de almacenamiento
-    }
-  };
 
   const abrirModalCancelar = (sol: Solicitud) => {
     setSolicitudACancelar(sol);
@@ -388,7 +277,6 @@ export default function MisSolicitudesPage() {
         }
       />
 
-      {/* Indicador de actualización en tiempo real */}
       <div className="flex flex-wrap items-center justify-between gap-2 px-3.5 py-2 rounded-xl bg-surface-container-low text-xs text-on-surface-variant">
         <div className="flex items-center gap-2">
           <span className="inline-block w-2 h-2 rounded-full bg-[#16a34a] animate-pulse" />
@@ -406,7 +294,6 @@ export default function MisSolicitudesPage() {
         )}
       </div>
 
-      {/* Notificación inmediata cuando cambia el estado de alguna solicitud */}
       {cambiosRecientes.length > 0 && (
         <CalloutBanner
           tone="info"
@@ -456,7 +343,6 @@ export default function MisSolicitudesPage() {
         </CalloutBanner>
       )}
 
-      {/* Resumen por estado (HU-14) */}
       {solicitudes.length > 0 && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {kpisEstado.map((kpi) => {
@@ -539,333 +425,28 @@ export default function MisSolicitudesPage() {
         </SurfaceCard>
       ) : (
         <div className="space-y-4 sm:space-y-space-md">
-          {solicitudesFiltradas.map((sol) => {
-            const recienActualizada = idsResaltados.includes(sol._id);
-            const fechaRespuestaTxt = formatearFecha(sol.fechaRespuestaProfesor || sol.updatedAt);
-
-            return (
-              <SurfaceCard
-                key={sol._id}
-                as="article"
-                tone="lowest"
-                interactive
-                className={`p-4 sm:p-space-lg flex flex-col justify-between gap-4 ${
-                  recienActualizada ? 'ring-2 ring-primary/40' : ''
-                }`}
-              >
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-4">
-                  <div className="space-y-2 min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="font-label-md text-[15px] sm:text-base font-bold text-on-surface group-hover:text-primary transition-colors break-words">
-                        {sol.materia} {sol.tema ? `• ${sol.tema}` : ''}
-                      </h2>
-                      {recienActualizada && (
-                        <Badge variant="primary" pill={false}>
-                          <Icon className="text-[14px]">bolt</Icon>
-                          <span>Actualizada</span>
-                        </Badge>
-                      )}
-                      {sol.modalidad && (
-                        <Badge variant="neutral" pill={false} className="capitalize">
-                          <Icon className="text-[14px]">
-                            {sol.modalidad === 'presencial' ? 'location_on' : 'videocam'}
-                          </Icon>
-                          <span>{sol.modalidad}</span>
-                        </Badge>
-                      )}
-                      {sol.tipo && (
-                        <Badge
-                          variant={sol.tipo === 'grupal' ? 'secondary' : 'neutral'}
-                          pill={false}
-                          className="capitalize"
-                        >
-                          <Icon className="text-[14px]">
-                            {sol.tipo === 'grupal' ? 'groups' : 'person'}
-                          </Icon>
-                          <span>{sol.tipo}</span>
-                        </Badge>
-                      )}
-                    </div>
-
-                    <p className="font-body-md text-on-surface-variant text-[13px] leading-relaxed break-words">
-                      {sol.descripcion}
-                    </p>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-2 text-xs text-on-surface-variant pt-1">
-                      <span className="inline-flex items-center gap-1.5 min-w-0">
-                        <Icon className="text-[16px] text-secondary">school</Icon>
-                        <span>Estudiante:</span>
-                        <strong className="font-semibold text-on-surface break-words">
-                          {sol.estudiante?.nombre || user?.nombre || 'Estudiante'}
-                        </strong>
-                      </span>
-                      <span className="inline-flex items-center gap-1.5 min-w-0">
-                        <Icon className="text-[16px] text-primary">person</Icon>
-                        <span>Profesor:</span>
-                        <strong className="font-semibold text-on-surface break-words">
-                          {sol.profesor?.nombre || 'Por asignar'}
-                        </strong>
-                      </span>
-                      <span className="inline-flex items-center gap-1.5 min-w-0">
-                        <Icon className="text-[16px] text-primary">menu_book</Icon>
-                        <span>Materia:</span>
-                        <strong className="font-semibold text-on-surface break-words">
-                          {sol.materia}
-                        </strong>
-                      </span>
-                      <span className="inline-flex items-center gap-1.5 min-w-0">
-                        <Icon className="text-[16px] text-primary">topic</Icon>
-                        <span>Tema:</span>
-                        <strong className="font-semibold text-on-surface break-words">
-                          {sol.tema || 'General'}
-                        </strong>
-                      </span>
-                      <span className="inline-flex items-center gap-1.5 min-w-0 sm:col-span-2">
-                        <Icon className="text-[16px] text-outline">schedule</Icon>
-                        <span>Horario elegido:</span>
-                        <strong className="font-semibold text-on-surface break-words">
-                          {sol.hora || 'No definido'}
-                        </strong>
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap sm:flex-col items-center sm:items-end justify-between gap-2.5 pt-2 sm:pt-0 border-t sm:border-t-0 border-surface-container shrink-0">
-                    {renderEstadoCita(sol.estado)}
-
-                    {(sol.estado === 'pendiente' || sol.estado === 'aplazada') && (
-                      <Button
-                        variant="danger"
-                        size="sm"
-                        onClick={() => abrirModalCancelar(sol)}
-                      >
-                        <Icon className="text-[16px]">delete_forever</Icon>
-                        <span>Cancelar Solicitud</span>
-                      </Button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Guía accionable según respuesta del profesor (HU-14) */}
-                {sol.estado === 'aceptada' && (
-                  <div className="rounded-xl bg-[#16a34a]/10 border border-[#16a34a]/25 p-3.5 space-y-2.5">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <p className="text-xs font-bold text-[#15803d] flex items-center gap-1.5">
-                        <Icon className="text-[17px]">event_available</Icon>
-                        <span>
-                          ¡Solicitud aceptada! Ya puedes prepararte para tu tutoría.
-                        </span>
-                      </p>
-                      {fechaRespuestaTxt && (
-                        <span className="text-[11px] text-on-surface-variant">
-                          Respondida: {fechaRespuestaTxt}
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2 text-xs text-on-surface">
-                      {sol.modalidad === 'presencial' && sol.lugar && (
-                        <span className="inline-flex items-center gap-1 bg-surface-container-lowest px-2.5 py-1 rounded-lg">
-                          <Icon className="text-[15px] text-primary">location_on</Icon>
-                          <span>Lugar: {sol.lugar}</span>
-                        </span>
-                      )}
-                      {sol.modalidad !== 'presencial' && sol.enlaceReunion && (
-                        <a
-                          href={sol.enlaceReunion}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1 bg-surface-container-lowest text-primary font-semibold px-2.5 py-1 rounded-lg hover:bg-surface-container transition-colors"
-                        >
-                          <Icon className="text-[15px]">videocam</Icon>
-                          <span>Enlace de reunión</span>
-                          <Icon className="text-[14px]">open_in_new</Icon>
-                        </a>
-                      )}
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => router.push('/estudiante/mis-tutorias')}
-                      >
-                        <Icon className="text-[15px]">cast_for_education</Icon>
-                        <span>Ir a Mis Tutorías</span>
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="subtle"
-                        size="sm"
-                        onClick={() =>
-                          router.push(`/estudiante/recursos?q=${encodeURIComponent(sol.materia)}`)
-                        }
-                      >
-                        <Icon className="text-[15px]">auto_stories</Icon>
-                        <span>Prepararme con Recursos</span>
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                {sol.estado === 'aplazada' && (
-                  <div className="rounded-xl bg-primary-fixed/30 border border-primary/20 p-3.5 space-y-2">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <p className="text-xs font-bold text-primary flex items-center gap-1.5">
-                        <Icon className="text-[17px]">event_repeat</Icon>
-                        <span>
-                          Solicitud aplazada por el profesor. Verifica la nueva franja o busca otra
-                          opción.
-                        </span>
-                      </p>
-                      {fechaRespuestaTxt && (
-                        <span className="text-[11px] text-on-surface-variant">
-                          Respondida: {fechaRespuestaTxt}
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          router.push(
-                            `/estudiante/buscar-tutorias?q=${encodeURIComponent(sol.materia)}`
-                          )
-                        }
-                      >
-                        <Icon className="text-[15px]">search</Icon>
-                        <span>Buscar otra opción de tutoría</span>
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                {sol.estado === 'cancelada' && (
-                  <div className="rounded-xl bg-error-container/30 border border-error/20 p-3.5 space-y-2">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <p className="text-xs font-bold text-error flex items-center gap-1.5">
-                        <Icon className="text-[17px]">event_busy</Icon>
-                        <span>
-                          {sol.canceladaPor === 'estudiante'
-                            ? 'Cancelada por ti — El horario del profesor quedó liberado.'
-                            : 'Esta solicitud fue cancelada por el profesor. Puedes buscar otro horario o docente disponible.'}
-                        </span>
-                      </p>
-                      {(formatearFecha(sol.fechaCancelacion) || fechaRespuestaTxt) && (
-                        <span className="text-[11px] text-on-surface-variant">
-                          Actualizada: {formatearFecha(sol.fechaCancelacion) || fechaRespuestaTxt}
-                        </span>
-                      )}
-                    </div>
-                    {sol.motivoCancelacion && (
-                      <p className="text-xs text-on-surface-variant">
-                        <strong>Motivo registrado:</strong> {sol.motivoCancelacion}
-                      </p>
-                    )}
-                    <Button
-                      type="button"
-                      variant="primary"
-                      size="sm"
-                      onClick={() =>
-                        router.push(
-                          `/estudiante/buscar-tutorias?q=${encodeURIComponent(sol.materia)}`
-                        )
-                      }
-                    >
-                      <Icon className="text-[15px]">search</Icon>
-                      <span>Buscar otra opción para {sol.materia}</span>
-                    </Button>
-                  </div>
-                )}
-
-                {sol.estado === 'pendiente' && (
-                  <p className="text-[11px] text-on-surface-variant flex items-center gap-1.5">
-                    <Icon className="text-[15px] text-amber-600">schedule_send</Icon>
-                    <span>
-                      Esperando respuesta de {sol.profesor?.nombre || 'tu profesor'}. El estado se
-                      actualizará automáticamente apenas responda.
-                    </span>
-                  </p>
-                )}
-
-                {sol.comentarioProfesor && (
-                  <CalloutBanner
-                    tone="info"
-                    icon="comment"
-                    title="Observación del Docente"
-                  >
-                    {sol.comentarioProfesor}
-                  </CalloutBanner>
-                )}
-              </SurfaceCard>
-            );
-          })}
+          {solicitudesFiltradas.map((sol) => (
+            <TarjetaSolicitudEstudiante
+              key={sol._id}
+              sol={sol}
+              recienActualizada={idsResaltados.includes(sol._id)}
+              userNombre={user?.nombre}
+              abrirModalCancelar={abrirModalCancelar}
+              onNavigate={(url) => router.push(url)}
+            />
+          ))}
         </div>
       )}
 
-      {/* Modal Canónico de Confirmación de Cancelación (HU-15) */}
-      <Modal
-        open={Boolean(solicitudACancelar)}
+      <ModalCancelarSolicitudEstudiante
+        solicitudACancelar={solicitudACancelar}
         onClose={() => setSolicitudACancelar(null)}
-        title="Cancelar Solicitud y Liberar Horario"
-        icon="warning"
-        tone="danger"
-        footer={
-          <>
-            <Button
-              variant="subtle"
-              size="sm"
-              onClick={() => setSolicitudACancelar(null)}
-            >
-              Mantener Solicitud
-            </Button>
-            <Button
-              variant="danger"
-              size="sm"
-              loading={cancelando}
-              onClick={confirmarCancelacion}
-            >
-              Sí, Cancelar y Liberar Horario
-            </Button>
-          </>
-        }
-      >
-        {errorCancelacion && (
-          <CalloutBanner tone="danger" title="Error">
-            {errorCancelacion}
-          </CalloutBanner>
-        )}
-
-        <p className="font-body-md text-sm text-on-surface leading-relaxed">
-          ¿Estás seguro de que deseas cancelar tu solicitud de{' '}
-          <strong>{solicitudACancelar?.materia}</strong>
-          {solicitudACancelar?.tema ? ` (${solicitudACancelar.tema})` : ''} con{' '}
-          <strong>{solicitudACancelar?.profesor?.nombre || 'el docente asignado'}</strong>
-          {solicitudACancelar?.hora ? (
-            <>
-              {' '}
-              en el horario <strong>{solicitudACancelar.hora}</strong>
-            </>
-          ) : null}
-          ?
-        </p>
-
-        <FormTextarea
-          id="motivo-cancelacion-estudiante"
-          label="Motivo de cancelación (opcional)"
-          value={motivoCancelacionEst}
-          onChange={(e) => setMotivoCancelacionEst(e.target.value)}
-          rows={2}
-          placeholder="Ej: Tengo cruce con otra clase o ya logré resolver la duda..."
-        />
-
-        <div className="p-space-sm rounded-lg bg-surface-container text-on-surface-variant font-label-md text-[12px] flex items-start gap-2">
-          <Icon className="text-primary text-[16px] shrink-0 mt-0.5">event_available</Icon>
-          <span>
-            Al cancelar, liberarás inmediatamente esta franja en la agenda del profesor para que
-            pueda atender a otros estudiantes.
-          </span>
-        </div>
-      </Modal>
+        cancelando={cancelando}
+        confirmarCancelacion={confirmarCancelacion}
+        errorCancelacion={errorCancelacion}
+        motivoCancelacionEst={motivoCancelacionEst}
+        setMotivoCancelacionEst={setMotivoCancelacionEst}
+      />
     </div>
   );
 }

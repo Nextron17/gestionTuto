@@ -4,66 +4,17 @@ import { useEffect, useMemo, useState } from 'react';
 import { AxiosError } from 'axios';
 import { useAuth } from '../../../../context/AuthContext';
 import api from '../../../../lib/api';
-import { Icon } from '../../../../components/ui/Icon';
 import { PageHeader } from '../../../../components/ui/PageHeader';
 import { SearchInput } from '../../../../components/ui/SearchInput';
-import { FormInput, FormSelect } from '../../../../components/ui/FormField';
 import { SurfaceCard } from '../../../../components/ui/SurfaceCard';
-import { Badge } from '../../../../components/ui/Badge';
-import { Button } from '../../../../components/ui/Button';
-import { CalloutBanner } from '../../../../components/ui/CalloutBanner';
-
-type TipoRecurso = 'video' | 'guia' | 'documento' | 'enlace';
-
-interface EscuelaItem {
-  _id: string;
-  nombre: string;
-  codigo: string;
-}
-
-interface TemaCatalogo {
-  _id: string;
-  nombre: string;
-  materia: string;
-}
-
-interface Recurso {
-  _id: string;
-  titulo: string;
-  escuela: string;
-  materia: string;
-  tema?: string;
-  tipo?: TipoRecurso;
-  claseOrigen?: string;
-  link: string;
-  profesor?: {
-    _id?: string;
-    nombre: string;
-  };
-}
-
-const TIPOS_RECURSO: {
-  id: TipoRecurso;
-  label: string;
-  icon: string;
-  badgeVariant: 'primary' | 'secondary' | 'neutral' | 'success';
-}[] = [
-  { id: 'video', label: 'Video', icon: 'play_circle', badgeVariant: 'primary' },
-  { id: 'guia', label: 'Guía', icon: 'menu_book', badgeVariant: 'success' },
-  { id: 'documento', label: 'Documento', icon: 'description', badgeVariant: 'secondary' },
-  { id: 'enlace', label: 'Enlace', icon: 'link', badgeVariant: 'neutral' },
-];
-
-function getTipoMeta(tipo?: string) {
-  return (
-    TIPOS_RECURSO.find((t) => t.id === tipo) || {
-      id: 'enlace' as TipoRecurso,
-      label: 'Enlace',
-      icon: 'link',
-      badgeVariant: 'neutral' as const,
-    }
-  );
-}
+import {
+  EscuelaItem,
+  Recurso,
+  TemaCatalogo,
+  TipoRecurso,
+} from '../../../../components/profesor/recursos/types';
+import { FormularioRecursoProfesor } from '../../../../components/profesor/recursos/FormularioRecursoProfesor';
+import { ListaRecursosProfesor } from '../../../../components/profesor/recursos/ListaRecursosProfesor';
 
 export default function RecursosProfesorPage() {
   const { user } = useAuth();
@@ -78,7 +29,6 @@ export default function RecursosProfesorPage() {
   const [tipoFiltro, setTipoFiltro] = useState<string>('todos');
   const [busqueda, setBusqueda] = useState('');
 
-  // Campos del formulario HU-10
   const [escuelaForm, setEscuelaForm] = useState('');
   const [materiaSelect, setMateriaSelect] = useState('');
   const [otraMateria, setOtraMateria] = useState('');
@@ -290,7 +240,6 @@ export default function RecursosProfesorPage() {
         }
       />
 
-      {/* Filtro rápido por Escuela */}
       <SurfaceCard tone="lowest" className="p-space-md space-y-space-sm">
         <span className="font-label-md text-[11px] font-semibold text-outline uppercase tracking-wider block">
           Filtrar por Escuela o Facultad
@@ -325,293 +274,46 @@ export default function RecursosProfesorPage() {
       </SurfaceCard>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-space-md items-start">
-        <SurfaceCard tone="lowest" className="p-4 sm:p-space-lg space-y-space-md h-fit">
-          <div>
-            <h2 className="font-label-md text-base font-bold text-on-surface flex items-center gap-2">
-              <Icon className="text-primary text-[20px]">upload_file</Icon>
-              <span>Recomendar Nuevo Recurso</span>
-            </h2>
-            <p className="text-xs text-on-surface-variant mt-0.5">
-              Asocia cada recurso a una materia y tema con su título, tipo y URL.
-            </p>
-          </div>
+        <FormularioRecursoProfesor
+          feedback={feedback}
+          agregarRecurso={agregarRecurso}
+          escuelaForm={escuelaForm}
+          setEscuelaForm={setEscuelaForm}
+          escuelas={escuelas}
+          materiaSelect={materiaSelect}
+          cambiarMateriaForm={cambiarMateriaForm}
+          materiasCatalogo={materiasCatalogo}
+          otraMateria={otraMateria}
+          setOtraMateria={setOtraMateria}
+          temaSelect={temaSelect}
+          setTemaSelect={setTemaSelect}
+          temasDeMateriaForm={temasDeMateriaForm}
+          otroTema={otroTema}
+          setOtroTema={setOtroTema}
+          titulo={titulo}
+          setTitulo={setTitulo}
+          tipo={tipo}
+          setTipo={setTipo}
+          link={link}
+          setLink={setLink}
+          publicando={publicando}
+        />
 
-          {feedback && (
-            <CalloutBanner
-              tone={feedback.tipo === 'ok' ? 'success' : 'danger'}
-              title={feedback.tipo === 'ok' ? 'Recurso publicado' : 'No se pudo publicar'}
-            >
-              {feedback.texto}
-            </CalloutBanner>
-          )}
-
-          <form onSubmit={agregarRecurso} className="space-y-3.5">
-            <FormSelect
-              id="recurso-escuela"
-              label="Escuela *"
-              icon="domain"
-              value={escuelaForm}
-              onChange={(e) => setEscuelaForm(e.target.value)}
-              required
-            >
-              <option value="">-- Seleccionar Escuela --</option>
-              {escuelas.map((esc) => (
-                <option key={esc._id} value={esc.nombre}>
-                  {esc.nombre}
-                </option>
-              ))}
-            </FormSelect>
-
-            <FormSelect
-              id="recurso-materia"
-              label="Materia / Asignatura *"
-              icon="menu_book"
-              value={materiaSelect}
-              onChange={(e) => cambiarMateriaForm(e.target.value)}
-              required
-            >
-              {materiasCatalogo.map((mat) => (
-                <option key={mat} value={mat}>
-                  {mat}
-                </option>
-              ))}
-              <option value="__otra__">+ Otra materia (escribir manualmente)</option>
-            </FormSelect>
-
-            {materiaSelect === '__otra__' && (
-              <FormInput
-                id="recurso-otra-materia"
-                label="Nombre de la Materia *"
-                icon="edit_note"
-                placeholder="Ej: Cálculo Multivariable"
-                value={otraMateria}
-                onChange={(e) => setOtraMateria(e.target.value)}
-                required
-              />
-            )}
-
-            <FormSelect
-              id="recurso-tema"
-              label="Tema Asociado *"
-              icon="topic"
-              value={temaSelect}
-              onChange={(e) => setTemaSelect(e.target.value)}
-              required
-            >
-              {temasDeMateriaForm.map((tm) => (
-                <option key={tm._id} value={tm.nombre}>
-                  {tm.nombre}
-                </option>
-              ))}
-              <option value="__otro__">+ Escribir tema específico</option>
-            </FormSelect>
-
-            {temaSelect === '__otro__' && (
-              <FormInput
-                id="recurso-otro-tema"
-                label="Nombre del Tema *"
-                icon="topic"
-                placeholder="Ej: Árboles AVL y Rotaciones"
-                value={otroTema}
-                onChange={(e) => setOtroTema(e.target.value)}
-                required
-              />
-            )}
-
-            <FormInput
-              id="recurso-titulo"
-              label="Título del Recurso *"
-              icon="description"
-              placeholder="Ej: Guía de Ejercicios Resueltos"
-              value={titulo}
-              onChange={(e) => setTitulo(e.target.value)}
-              required
-            />
-
-            <FormSelect
-              id="recurso-tipo"
-              label="Tipo de Recurso *"
-              icon={getTipoMeta(tipo).icon}
-              value={tipo}
-              onChange={(e) => setTipo(e.target.value as TipoRecurso)}
-              required
-            >
-              <option value="video">Video (clase / tutorial)</option>
-              <option value="guia">Guía de estudio / taller</option>
-              <option value="documento">Documento / PDF / libro</option>
-              <option value="enlace">Enlace / herramienta interactiva</option>
-            </FormSelect>
-
-            <FormInput
-              id="recurso-link"
-              type="url"
-              label="URL del Recurso *"
-              icon="link"
-              placeholder="https://..."
-              value={link}
-              onChange={(e) => setLink(e.target.value)}
-              required
-            />
-
-            <Button type="submit" variant="primary" fullWidth loading={publicando}>
-              <Icon className="text-[18px]">add</Icon>
-              <span>Publicar Recurso Recomendado</span>
-            </Button>
-          </form>
-        </SurfaceCard>
-
-        <SurfaceCard tone="lowest" className="p-4 sm:p-space-lg lg:col-span-2 space-y-space-md">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 pb-2 border-b border-surface-container">
-            <h2 className="font-label-md text-base font-bold text-on-surface flex items-center gap-2 min-w-0">
-              <Icon className="text-primary text-[20px] shrink-0">library_books</Icon>
-              <span className="truncate">
-                {escuelaFiltro === 'todas'
-                  ? 'Todos los Materiales Publicados'
-                  : `Materiales • ${escuelaFiltro}`}
-              </span>
-            </h2>
-            <Badge variant="neutral" className="self-start sm:self-auto shrink-0">
-              {recursosFiltrados.length}{' '}
-              {recursosFiltrados.length === 1 ? 'recurso' : 'recursos'}
-            </Badge>
-          </div>
-
-          {/* Filtros por Materia, Tema y Tipo (HU-10) */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <FormSelect
-              id="filtro-recurso-materia"
-              label="Materia"
-              icon="menu_book"
-              value={materiaFiltro}
-              onChange={(e) => {
-                setMateriaFiltro(e.target.value);
-                setTemaFiltro('todos');
-              }}
-            >
-              <option value="todas">Todas las materias</option>
-              {materiasEnLista.map((m) => (
-                <option key={m} value={m}>
-                  {m}
-                </option>
-              ))}
-            </FormSelect>
-
-            <FormSelect
-              id="filtro-recurso-tema"
-              label="Tema"
-              icon="topic"
-              value={temaFiltro}
-              onChange={(e) => setTemaFiltro(e.target.value)}
-            >
-              <option value="todos">Todos los temas</option>
-              {temasEnLista.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </FormSelect>
-
-            <FormSelect
-              id="filtro-recurso-tipo"
-              label="Tipo"
-              icon="category"
-              value={tipoFiltro}
-              onChange={(e) => setTipoFiltro(e.target.value)}
-            >
-              <option value="todos">Todos los tipos</option>
-              {TIPOS_RECURSO.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.label}
-                </option>
-              ))}
-            </FormSelect>
-          </div>
-
-          {cargando ? (
-            <div className="py-8 text-sm text-on-surface-variant flex items-center gap-2">
-              <Icon className="text-primary animate-pulse">hourglass_top</Icon>
-              <span>Cargando recursos...</span>
-            </div>
-          ) : recursosFiltrados.length === 0 ? (
-            <div className="p-8 sm:p-10 rounded-xl bg-surface-container-low text-center space-y-2">
-              <Icon className="text-outline text-[36px]">folder_off</Icon>
-              <p className="text-sm text-on-surface-variant">
-                No hay materiales publicados con los filtros seleccionados.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {recursosFiltrados.map((r) => {
-                const meta = getTipoMeta(r.tipo);
-                const esAutor = Boolean(user?.id && r.profesor?._id === user.id);
-                return (
-                  <div
-                    key={r._id}
-                    className="p-3.5 sm:p-space-md bg-surface-container-low hover:bg-surface-container rounded-xl transition-colors flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3.5"
-                  >
-                    <div className="space-y-1.5 min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <Badge variant={meta.badgeVariant} pill={false}>
-                          <Icon className="text-[13px]">{meta.icon}</Icon>
-                          <span>{meta.label}</span>
-                        </Badge>
-                        <Badge variant="primary" pill={false}>
-                          {r.escuela || 'General'}
-                        </Badge>
-                        {r.claseOrigen && (
-                          <Badge variant="success" dot>
-                            {r.claseOrigen}
-                          </Badge>
-                        )}
-                      </div>
-                      <h4 className="font-label-md text-sm font-bold text-on-surface break-words">
-                        {r.titulo}
-                      </h4>
-                      <p className="text-xs text-primary font-semibold flex flex-wrap items-center gap-1">
-                        <Icon className="text-[14px] shrink-0">menu_book</Icon>
-                        <span className="break-words">
-                          {r.materia} {r.tema ? `• ${r.tema}` : ''}{' '}
-                          {r.profesor ? `• Por ${r.profesor.nombre}` : ''}
-                        </span>
-                      </p>
-                      <a
-                        href={r.link}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-xs text-outline hover:text-primary underline truncate block font-mono"
-                      >
-                        {r.link}
-                      </a>
-                    </div>
-
-                    <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
-                      <a
-                        href={r.link}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 bg-primary hover:bg-primary-container text-on-primary font-label-md text-xs px-3.5 py-2.5 sm:py-2 rounded-lg font-semibold shadow-sm active:scale-[0.98] transition-all"
-                      >
-                        <Icon className="text-[16px]">open_in_new</Icon>
-                        <span>Abrir</span>
-                      </a>
-                      {esAutor && (
-                        <button
-                          type="button"
-                          onClick={() => eliminarMiRecurso(r._id)}
-                          className="w-9 h-9 rounded-lg bg-surface-container hover:bg-error-container text-outline hover:text-error flex items-center justify-center transition-colors cursor-pointer shrink-0"
-                          title="Eliminar recurso publicado"
-                          aria-label={`Eliminar ${r.titulo}`}
-                        >
-                          <Icon className="text-[18px]">delete</Icon>
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </SurfaceCard>
+        <ListaRecursosProfesor
+          escuelaFiltro={escuelaFiltro}
+          recursosFiltrados={recursosFiltrados}
+          materiaFiltro={materiaFiltro}
+          setMateriaFiltro={setMateriaFiltro}
+          materiasEnLista={materiasEnLista}
+          temaFiltro={temaFiltro}
+          setTemaFiltro={setTemaFiltro}
+          temasEnLista={temasEnLista}
+          tipoFiltro={tipoFiltro}
+          setTipoFiltro={setTipoFiltro}
+          cargando={cargando}
+          userId={user?.id}
+          eliminarMiRecurso={eliminarMiRecurso}
+        />
       </div>
     </div>
   );
