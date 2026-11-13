@@ -44,3 +44,4 @@ export function toInputDateValue(fechaIso?: string): string {
   if (Number.isNaN(d.getTime())) return '';
   return d.toISOString().slice(0, 10);
 }
+

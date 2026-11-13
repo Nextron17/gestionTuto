@@ -179,11 +179,11 @@ export default function MisTutoriasProfesorPage() {
 
   const hayFiltrosActivos = Boolean(
     busquedaTexto ||
-      filtroMateria ||
-      filtroTema ||
-      filtroFecha ||
-      filtroModalidad ||
-      filtroEstado !== 'todas'
+    filtroMateria ||
+    filtroTema ||
+    filtroFecha ||
+    filtroModalidad ||
+    filtroEstado !== 'todas'
   );
 
   const limpiarFiltros = () => {

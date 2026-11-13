@@ -46,3 +46,4 @@ export function formatFecha(fecha?: string): string {
     year: 'numeric',
   });
 }
+

@@ -158,19 +158,19 @@ export default function AdminUsuariosPage() {
   const escuelaSeleccionadaObj = escuelas.find((e) => e.nombre === escuela);
   const carrerasFiltradas = escuelaSeleccionadaObj
     ? carreras.filter(
-        (c) =>
-          c.escuela?._id === escuelaSeleccionadaObj._id ||
-          c.escuela?.nombre === escuelaSeleccionadaObj.nombre
-      )
+      (c) =>
+        c.escuela?._id === escuelaSeleccionadaObj._id ||
+        c.escuela?.nombre === escuelaSeleccionadaObj.nombre
+    )
     : carreras;
 
   const carreraSeleccionadaObj = carreras.find((c) => c.nombre === carrera);
   const materiasFiltradas = carreraSeleccionadaObj
     ? materiasCatalogo.filter(
-        (m) =>
-          m.carrera?._id === carreraSeleccionadaObj._id ||
-          m.carrera?.nombre === carreraSeleccionadaObj.nombre
-      )
+      (m) =>
+        m.carrera?._id === carreraSeleccionadaObj._id ||
+        m.carrera?.nombre === carreraSeleccionadaObj.nombre
+    )
     : materiasCatalogo;
 
   const usuariosFiltrados = usuarios.filter((u) => {
@@ -243,11 +243,10 @@ export default function AdminUsuariosPage() {
                 key={tab.id}
                 type="button"
                 onClick={() => setFiltroRol(tab.id)}
-                className={`px-3 py-1.5 rounded-full font-label-md text-[12px] font-semibold transition-all cursor-pointer active:scale-95 ${
-                  active
+                className={`px-3 py-1.5 rounded-full font-label-md text-[12px] font-semibold transition-all cursor-pointer active:scale-95 ${active
                     ? 'bg-primary text-on-primary shadow-xs'
                     : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface'
-                }`}
+                  }`}
               >
                 {tab.label} ({tab.count})
               </button>

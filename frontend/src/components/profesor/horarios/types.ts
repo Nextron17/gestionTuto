@@ -29,3 +29,4 @@ export interface FranjaForm {
 
 export const DIAS_SEMANA = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 export const SEMESTRES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+

@@ -52,3 +52,4 @@ export function getInitials(name: string): string {
     .map((part) => part[0]?.toUpperCase() || '')
     .join('');
 }
+

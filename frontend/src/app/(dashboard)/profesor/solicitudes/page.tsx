@@ -141,7 +141,7 @@ export default function SolicitudesProfesorPage() {
     setModalGestion({ solicitud: sol, accion });
     setFechaModal(
       toInputDateValue(sol.fechaPropuesta || sol.createdAt) ||
-        new Date().toISOString().slice(0, 10)
+      new Date().toISOString().slice(0, 10)
     );
     setHoraPropuesta(sol.hora || '');
     setModalidad(sol.modalidad || 'virtual');
