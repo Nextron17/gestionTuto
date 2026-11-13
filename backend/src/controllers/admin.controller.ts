@@ -6,6 +6,8 @@ import Escuela from '../models/Escuela';
 import Carrera from '../models/Carrera';
 import Materia from '../models/Materia';
 import SolicitudTutoria from '../models/SolicitudTutoria';
+import Recurso from '../models/Recurso';
+import HorarioDisponible from '../models/HorarioDisponible';
 
 export const obtenerUsuarios = async (req: AuthRequest, res: Response) => {
   try {
@@ -241,15 +243,74 @@ export const eliminarMateria = async (req: AuthRequest, res: Response) => {
 
 export const obtenerReportesGlobales = async (req: AuthRequest, res: Response) => {
   try {
-    const totalEstudiantes = await Usuario.countDocuments({ rol: 'estudiante' });
-    const totalProfesores = await Usuario.countDocuments({ rol: 'profesor' });
+    const [
+      totalEstudiantes,
+      totalProfesores,
+      totalTutorias,
+      tutoriasPendientes,
+      tutoriasAceptadas,
+      tutoriasFinalizadas,
+      tutoriasAplazadas,
+      tutoriasCanceladas,
+      tutoriasVirtuales,
+      tutoriasPresenciales,
+      tutoriasIndividuales,
+      tutoriasGrupales,
+      asistenciasConfirmadas,
+      inasistenciasRegistradas,
+      totalRecursos,
+      totalHorarios,
+      demandaPorMateria,
+    ] = await Promise.all([
+      Usuario.countDocuments({ rol: 'estudiante' }),
+      Usuario.countDocuments({ rol: 'profesor' }),
+      SolicitudTutoria.countDocuments(),
+      SolicitudTutoria.countDocuments({ estado: 'pendiente' }),
+      SolicitudTutoria.countDocuments({ estado: 'aceptada' }),
+      SolicitudTutoria.countDocuments({ estado: 'finalizada' }),
+      SolicitudTutoria.countDocuments({ estado: 'aplazada' }),
+      SolicitudTutoria.countDocuments({ estado: 'cancelada' }),
+      SolicitudTutoria.countDocuments({ modalidad: 'virtual' }),
+      SolicitudTutoria.countDocuments({ modalidad: 'presencial' }),
+      SolicitudTutoria.countDocuments({ tipo: 'individual' }),
+      SolicitudTutoria.countDocuments({ tipo: 'grupal' }),
+      SolicitudTutoria.countDocuments({ asistenciaEstudiante: true }),
+      SolicitudTutoria.countDocuments({ asistenciaEstudiante: false }),
+      Recurso.countDocuments(),
+      HorarioDisponible.countDocuments(),
+      SolicitudTutoria.aggregate([
+        {
+          $group: {
+            _id: '$materia',
+            totalSolicitudes: { $sum: 1 },
+            finalizadas: {
+              $sum: { $cond: [{ $eq: ['$estado', 'finalizada'] }, 1, 0] },
+            },
+            pendientes: {
+              $sum: { $cond: [{ $eq: ['$estado', 'pendiente'] }, 1, 0] },
+            },
+          },
+        },
+        { $sort: { totalSolicitudes: -1 } },
+        {
+          $project: {
+            _id: 0,
+            materia: '$_id',
+            totalSolicitudes: 1,
+            finalizadas: 1,
+            pendientes: 1,
+          },
+        },
+      ]),
+    ]);
+
     const totalUsuarios = totalEstudiantes + totalProfesores;
-    const totalTutorias = await SolicitudTutoria.countDocuments();
-    const tutoriasPendientes = await SolicitudTutoria.countDocuments({ estado: 'pendiente' });
-    const tutoriasAceptadas = await SolicitudTutoria.countDocuments({ estado: 'aceptada' });
-    const tutoriasFinalizadas = await SolicitudTutoria.countDocuments({ estado: 'finalizada' });
 
     return res.json({
+      fechaGeneracion: new Date().toISOString(),
+      filtros: {
+        periodo: 'Global / Tiempo Real',
+      },
       totalUsuarios,
       totalEstudiantes,
       totalProfesores,
@@ -257,6 +318,17 @@ export const obtenerReportesGlobales = async (req: AuthRequest, res: Response) =
       tutoriasPendientes,
       tutoriasAceptadas,
       tutoriasFinalizadas,
+      tutoriasAplazadas,
+      tutoriasCanceladas,
+      tutoriasVirtuales,
+      tutoriasPresenciales,
+      tutoriasIndividuales,
+      tutoriasGrupales,
+      asistenciasConfirmadas,
+      inasistenciasRegistradas,
+      totalRecursos,
+      totalHorarios,
+      demandaPorMateria,
     });
   } catch (error) {
     console.error('Error al generar reportes:', error);

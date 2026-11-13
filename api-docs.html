@@ -1479,8 +1479,8 @@
             id: "adm-reportes-get",
             method: "GET",
             path: "/api/admin/reportes",
-            summary: "Obtener KPIs y métricas globales del sistema",
-            description: "Calcula en tiempo real el total de estudiantes, profesores y el desglose de tutorías por estado (pendientes, aceptadas y finalizadas).",
+            summary: "Obtener KPIs, métricas operativas y demanda por materia del sistema",
+            description: "Calcula en tiempo real los totales de usuarios, desglose de tutorías por estado, modalidad, tipo, asistencias, recursos, horarios y demanda agrupada por materia junto con fechaGeneracion y filtros aplicados.",
             auth: "Bearer JWT + Rol Admin",
             roles: ["admin"],
             params: [],
@@ -1488,13 +1488,28 @@
             requestExample: null,
             responseStatus: "200 OK",
             responseExample: {
+              fechaGeneracion: "2026-11-12T21:20:00.000Z",
+              filtros: { periodo: "Global / Tiempo Real" },
               totalUsuarios: 48,
               totalEstudiantes: 40,
               totalProfesores: 8,
               totalTutorias: 135,
               tutoriasPendientes: 14,
               tutoriasAceptadas: 26,
-              tutoriasFinalizadas: 85
+              tutoriasFinalizadas: 85,
+              tutoriasAplazadas: 6,
+              tutoriasCanceladas: 4,
+              tutoriasVirtuales: 98,
+              tutoriasPresenciales: 37,
+              tutoriasIndividuales: 102,
+              tutoriasGrupales: 33,
+              asistenciasConfirmadas: 79,
+              inasistenciasRegistradas: 6,
+              totalRecursos: 45,
+              totalHorarios: 28,
+              demandaPorMateria: [
+                { materia: "Cálculo Multivariable", totalSolicitudes: 34, finalizadas: 24, pendientes: 3 }
+              ]
             },
             errors: [
               { code: 500, msg: '{ "message": "Error al generar métricas del sistema" }' }
