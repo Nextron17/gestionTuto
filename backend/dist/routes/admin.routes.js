@@ -20,4 +20,7 @@ router.delete('/carreras/:id', admin_controller_1.eliminarCarrera);
 router.post('/materias', admin_controller_1.crearMateria);
 router.delete('/materias/:id', admin_controller_1.eliminarMateria);
 router.get('/reportes', admin_controller_1.obtenerReportesGlobales);
+router.get('/recursos', admin_controller_1.obtenerRecursosAdmin);
+router.put('/recursos/:id', admin_controller_1.actualizarRecursoAdmin);
+router.delete('/recursos/:id', admin_controller_1.eliminarRecursoAdmin);
 exports.default = router;

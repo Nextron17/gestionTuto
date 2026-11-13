@@ -18,6 +18,7 @@ export default function AdminSidebar({ mobileOpen = false, onClose }: AdminSideb
   const links = [
     { href: '/admin/usuarios', label: 'Gestión Usuarios', icon: 'group' },
     { href: '/admin/catalogo-academico', label: 'Catálogo Académico', icon: 'school' },
+    { href: '/admin/recursos', label: 'Recursos Académicos', icon: 'library_books' },
     { href: '/admin/reportes', label: 'Reportes y Métricas', icon: 'analytics' },
   ];
 

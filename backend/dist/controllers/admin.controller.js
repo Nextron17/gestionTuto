@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.obtenerReportesGlobales = exports.eliminarMateria = exports.crearMateria = exports.eliminarCarrera = exports.crearCarrera = exports.eliminarEscuela = exports.crearEscuela = exports.obtenerCatalogo = exports.eliminarUsuario = exports.cambiarRolUsuario = exports.actualizarUsuario = exports.crearUsuario = exports.obtenerUsuarios = void 0;
+exports.eliminarRecursoAdmin = exports.actualizarRecursoAdmin = exports.obtenerRecursosAdmin = exports.obtenerReportesGlobales = exports.eliminarMateria = exports.crearMateria = exports.eliminarCarrera = exports.crearCarrera = exports.eliminarEscuela = exports.crearEscuela = exports.obtenerCatalogo = exports.eliminarUsuario = exports.cambiarRolUsuario = exports.actualizarUsuario = exports.crearUsuario = exports.obtenerUsuarios = void 0;
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const Usuario_1 = __importDefault(require("../models/Usuario"));
 const Escuela_1 = __importDefault(require("../models/Escuela"));
@@ -238,72 +238,266 @@ const eliminarMateria = async (req, res) => {
 exports.eliminarMateria = eliminarMateria;
 const obtenerReportesGlobales = async (req, res) => {
     try {
-        const [totalEstudiantes, totalProfesores, totalTutorias, tutoriasPendientes, tutoriasAceptadas, tutoriasFinalizadas, tutoriasAplazadas, tutoriasCanceladas, tutoriasVirtuales, tutoriasPresenciales, tutoriasIndividuales, tutoriasGrupales, asistenciasConfirmadas, inasistenciasRegistradas, totalRecursos, totalHorarios, demandaPorMateria,] = await Promise.all([
+        const carreraFilter = typeof req.query.carrera === 'string' &&
+            req.query.carrera.trim() !== '' &&
+            req.query.carrera.trim() !== 'todas'
+            ? req.query.carrera.trim()
+            : null;
+        const semestreRaw = typeof req.query.semestre === 'string' ? req.query.semestre.trim() : '';
+        const semestreParsed = semestreRaw !== '' && semestreRaw !== 'todos' ? Number(semestreRaw) : NaN;
+        const semestreFilter = Number.isFinite(semestreParsed) ? semestreParsed : null;
+        const matchEstudiante = {};
+        if (carreraFilter)
+            matchEstudiante['estudianteDoc.carrera'] = carreraFilter;
+        if (semestreFilter !== null)
+            matchEstudiante['estudianteDoc.semestre'] = semestreFilter;
+        const pipelineBase = [
+            {
+                $lookup: {
+                    from: Usuario_1.default.collection.name,
+                    localField: 'estudiante',
+                    foreignField: '_id',
+                    as: 'estudianteDoc',
+                },
+            },
+            {
+                $unwind: {
+                    path: '$estudianteDoc',
+                    preserveNullAndEmptyArrays: true,
+                },
+            },
+        ];
+        if (Object.keys(matchEstudiante).length > 0) {
+            pipelineBase.push({ $match: matchEstudiante });
+        }
+        const pipelineFacet = [
+            ...pipelineBase,
+            {
+                $facet: {
+                    resumen: [
+                        {
+                            $group: {
+                                _id: null,
+                                totalTutorias: { $sum: 1 },
+                                tutoriasPendientes: {
+                                    $sum: { $cond: [{ $eq: ['$estado', 'pendiente'] }, 1, 0] },
+                                },
+                                tutoriasAceptadas: {
+                                    $sum: { $cond: [{ $eq: ['$estado', 'aceptada'] }, 1, 0] },
+                                },
+                                tutoriasFinalizadas: {
+                                    $sum: { $cond: [{ $eq: ['$estado', 'finalizada'] }, 1, 0] },
+                                },
+                                tutoriasAplazadas: {
+                                    $sum: { $cond: [{ $eq: ['$estado', 'aplazada'] }, 1, 0] },
+                                },
+                                tutoriasCanceladas: {
+                                    $sum: { $cond: [{ $eq: ['$estado', 'cancelada'] }, 1, 0] },
+                                },
+                                tutoriasVirtuales: {
+                                    $sum: { $cond: [{ $eq: ['$modalidad', 'virtual'] }, 1, 0] },
+                                },
+                                tutoriasPresenciales: {
+                                    $sum: { $cond: [{ $eq: ['$modalidad', 'presencial'] }, 1, 0] },
+                                },
+                                tutoriasIndividuales: {
+                                    $sum: { $cond: [{ $eq: ['$tipo', 'individual'] }, 1, 0] },
+                                },
+                                tutoriasGrupales: {
+                                    $sum: { $cond: [{ $eq: ['$tipo', 'grupal'] }, 1, 0] },
+                                },
+                                asistenciasConfirmadas: {
+                                    $sum: { $cond: [{ $eq: ['$asistenciaEstudiante', true] }, 1, 0] },
+                                },
+                                inasistenciasRegistradas: {
+                                    $sum: { $cond: [{ $eq: ['$asistenciaEstudiante', false] }, 1, 0] },
+                                },
+                            },
+                        },
+                    ],
+                    demandaPorMateria: [
+                        {
+                            $group: {
+                                _id: { $ifNull: ['$materia', 'Sin especificar'] },
+                                totalSolicitudes: { $sum: 1 },
+                                finalizadas: {
+                                    $sum: { $cond: [{ $eq: ['$estado', 'finalizada'] }, 1, 0] },
+                                },
+                                pendientes: {
+                                    $sum: { $cond: [{ $eq: ['$estado', 'pendiente'] }, 1, 0] },
+                                },
+                                carreras: {
+                                    $addToSet: {
+                                        $cond: [
+                                            {
+                                                $or: [
+                                                    { $eq: ['$estudianteDoc.carrera', null] },
+                                                    { $eq: ['$estudianteDoc.carrera', ''] },
+                                                ],
+                                            },
+                                            'Sin carrera',
+                                            '$estudianteDoc.carrera',
+                                        ],
+                                    },
+                                },
+                            },
+                        },
+                        { $sort: { totalSolicitudes: -1, _id: 1 } },
+                        {
+                            $project: {
+                                _id: 0,
+                                materia: '$_id',
+                                totalSolicitudes: 1,
+                                finalizadas: 1,
+                                pendientes: 1,
+                                carreras: 1,
+                            },
+                        },
+                    ],
+                    demandaPorTema: [
+                        {
+                            $addFields: {
+                                temaNormalizado: {
+                                    $let: {
+                                        vars: {
+                                            trimmed: { $trim: { input: { $ifNull: ['$tema', ''] } } },
+                                        },
+                                        in: {
+                                            $cond: [
+                                                { $eq: ['$$trimmed', ''] },
+                                                'Tema general / Sin especificar',
+                                                '$$trimmed',
+                                            ],
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                        {
+                            $group: {
+                                _id: {
+                                    materia: { $ifNull: ['$materia', 'Sin especificar'] },
+                                    tema: '$temaNormalizado',
+                                },
+                                totalSolicitudes: { $sum: 1 },
+                                finalizadas: {
+                                    $sum: { $cond: [{ $eq: ['$estado', 'finalizada'] }, 1, 0] },
+                                },
+                                pendientes: {
+                                    $sum: { $cond: [{ $eq: ['$estado', 'pendiente'] }, 1, 0] },
+                                },
+                            },
+                        },
+                        { $sort: { totalSolicitudes: -1, '_id.materia': 1 } },
+                        {
+                            $project: {
+                                _id: 0,
+                                materia: '$_id.materia',
+                                tema: '$_id.tema',
+                                totalSolicitudes: 1,
+                                finalizadas: 1,
+                                pendientes: 1,
+                            },
+                        },
+                    ],
+                    demandaPorCarreraSemestre: [
+                        {
+                            $group: {
+                                _id: {
+                                    carrera: {
+                                        $cond: [
+                                            {
+                                                $or: [
+                                                    { $eq: ['$estudianteDoc.carrera', null] },
+                                                    { $eq: ['$estudianteDoc.carrera', ''] },
+                                                ],
+                                            },
+                                            'Sin carrera registrada',
+                                            '$estudianteDoc.carrera',
+                                        ],
+                                    },
+                                    semestre: '$estudianteDoc.semestre',
+                                },
+                                totalSolicitudes: { $sum: 1 },
+                                materiasPrincipales: { $addToSet: '$materia' },
+                            },
+                        },
+                        { $sort: { totalSolicitudes: -1, '_id.carrera': 1, '_id.semestre': 1 } },
+                        {
+                            $project: {
+                                _id: 0,
+                                carrera: '$_id.carrera',
+                                semestre: '$_id.semestre',
+                                totalSolicitudes: 1,
+                                materiasPrincipales: 1,
+                            },
+                        },
+                    ],
+                },
+            },
+        ];
+        const [totalEstudiantes, totalProfesores, totalRecursos, totalHorarios, carrerasCatalogo, carrerasEstudiantes, semestresEstudiantes, agregado,] = await Promise.all([
             Usuario_1.default.countDocuments({ rol: 'estudiante' }),
             Usuario_1.default.countDocuments({ rol: 'profesor' }),
-            SolicitudTutoria_1.default.countDocuments(),
-            SolicitudTutoria_1.default.countDocuments({ estado: 'pendiente' }),
-            SolicitudTutoria_1.default.countDocuments({ estado: 'aceptada' }),
-            SolicitudTutoria_1.default.countDocuments({ estado: 'finalizada' }),
-            SolicitudTutoria_1.default.countDocuments({ estado: 'aplazada' }),
-            SolicitudTutoria_1.default.countDocuments({ estado: 'cancelada' }),
-            SolicitudTutoria_1.default.countDocuments({ modalidad: 'virtual' }),
-            SolicitudTutoria_1.default.countDocuments({ modalidad: 'presencial' }),
-            SolicitudTutoria_1.default.countDocuments({ tipo: 'individual' }),
-            SolicitudTutoria_1.default.countDocuments({ tipo: 'grupal' }),
-            SolicitudTutoria_1.default.countDocuments({ asistenciaEstudiante: true }),
-            SolicitudTutoria_1.default.countDocuments({ asistenciaEstudiante: false }),
             Recurso_1.default.countDocuments(),
             HorarioDisponible_1.default.countDocuments(),
-            SolicitudTutoria_1.default.aggregate([
-                {
-                    $group: {
-                        _id: '$materia',
-                        totalSolicitudes: { $sum: 1 },
-                        finalizadas: {
-                            $sum: { $cond: [{ $eq: ['$estado', 'finalizada'] }, 1, 0] },
-                        },
-                        pendientes: {
-                            $sum: { $cond: [{ $eq: ['$estado', 'pendiente'] }, 1, 0] },
-                        },
-                    },
-                },
-                { $sort: { totalSolicitudes: -1 } },
-                {
-                    $project: {
-                        _id: 0,
-                        materia: '$_id',
-                        totalSolicitudes: 1,
-                        finalizadas: 1,
-                        pendientes: 1,
-                    },
-                },
-            ]),
+            Carrera_1.default.find().select('nombre'),
+            Usuario_1.default.distinct('carrera', { rol: 'estudiante' }),
+            Usuario_1.default.distinct('semestre', { rol: 'estudiante' }),
+            SolicitudTutoria_1.default.aggregate(pipelineFacet),
         ]);
+        const facetResult = agregado[0] || {};
+        const resumen = facetResult.resumen?.[0] || {
+            totalTutorias: 0,
+            tutoriasPendientes: 0,
+            tutoriasAceptadas: 0,
+            tutoriasFinalizadas: 0,
+            tutoriasAplazadas: 0,
+            tutoriasCanceladas: 0,
+            tutoriasVirtuales: 0,
+            tutoriasPresenciales: 0,
+            tutoriasIndividuales: 0,
+            tutoriasGrupales: 0,
+            asistenciasConfirmadas: 0,
+            inasistenciasRegistradas: 0,
+        };
+        const carrerasDisponibles = Array.from(new Set([
+            ...carrerasCatalogo.map((c) => c.nombre),
+            ...carrerasEstudiantes.filter((c) => typeof c === 'string' && c.trim() !== ''),
+        ])).sort((a, b) => a.localeCompare(b));
+        const semestresDisponibles = semestresEstudiantes
+            .filter((s) => typeof s === 'number' && Number.isFinite(s))
+            .sort((a, b) => a - b);
         const totalUsuarios = totalEstudiantes + totalProfesores;
         return res.json({
             fechaGeneracion: new Date().toISOString(),
             filtros: {
                 periodo: 'Global / Tiempo Real',
+                carrera: carreraFilter || 'Todas',
+                semestre: semestreFilter !== null ? String(semestreFilter) : 'Todos',
             },
+            carrerasDisponibles,
+            semestresDisponibles,
             totalUsuarios,
             totalEstudiantes,
             totalProfesores,
-            totalTutorias,
-            tutoriasPendientes,
-            tutoriasAceptadas,
-            tutoriasFinalizadas,
-            tutoriasAplazadas,
-            tutoriasCanceladas,
-            tutoriasVirtuales,
-            tutoriasPresenciales,
-            tutoriasIndividuales,
-            tutoriasGrupales,
-            asistenciasConfirmadas,
-            inasistenciasRegistradas,
+            totalTutorias: resumen.totalTutorias,
+            tutoriasPendientes: resumen.tutoriasPendientes,
+            tutoriasAceptadas: resumen.tutoriasAceptadas,
+            tutoriasFinalizadas: resumen.tutoriasFinalizadas,
+            tutoriasAplazadas: resumen.tutoriasAplazadas,
+            tutoriasCanceladas: resumen.tutoriasCanceladas,
+            tutoriasVirtuales: resumen.tutoriasVirtuales,
+            tutoriasPresenciales: resumen.tutoriasPresenciales,
+            tutoriasIndividuales: resumen.tutoriasIndividuales,
+            tutoriasGrupales: resumen.tutoriasGrupales,
+            asistenciasConfirmadas: resumen.asistenciasConfirmadas,
+            inasistenciasRegistradas: resumen.inasistenciasRegistradas,
             totalRecursos,
             totalHorarios,
-            demandaPorMateria,
+            demandaPorMateria: facetResult.demandaPorMateria || [],
+            demandaPorTema: facetResult.demandaPorTema || [],
+            demandaPorCarreraSemestre: facetResult.demandaPorCarreraSemestre || [],
         });
     }
     catch (error) {
@@ -312,3 +506,67 @@ const obtenerReportesGlobales = async (req, res) => {
     }
 };
 exports.obtenerReportesGlobales = obtenerReportesGlobales;
+const obtenerRecursosAdmin = async (req, res) => {
+    try {
+        const { escuela } = req.query;
+        const filtro = {};
+        if (typeof escuela === 'string' && escuela.trim() !== '' && escuela !== 'todas') {
+            filtro.escuela = escuela.trim();
+        }
+        const recursos = await Recurso_1.default.find(filtro)
+            .populate('profesor', 'nombre email escuela carrera')
+            .sort({ createdAt: -1 });
+        return res.json(recursos);
+    }
+    catch (error) {
+        console.error('Error al obtener recursos para administración:', error);
+        return res.status(500).json({ message: 'Error al obtener recursos académicos' });
+    }
+};
+exports.obtenerRecursosAdmin = obtenerRecursosAdmin;
+const actualizarRecursoAdmin = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { titulo, escuela, materia, tema, claseOrigen, link } = req.body;
+        if (!titulo || !String(titulo).trim() || !materia || !String(materia).trim() || !link || !String(link).trim()) {
+            return res.status(400).json({
+                message: 'El título, la materia y el enlace del recurso son obligatorios',
+            });
+        }
+        const recursoExistente = await Recurso_1.default.findById(id);
+        if (!recursoExistente) {
+            return res.status(404).json({ message: 'Recurso no encontrado' });
+        }
+        recursoExistente.titulo = String(titulo).trim();
+        recursoExistente.escuela =
+            typeof escuela === 'string' && escuela.trim() !== '' ? escuela.trim() : 'General';
+        recursoExistente.materia = String(materia).trim();
+        recursoExistente.tema = typeof tema === 'string' ? tema.trim() : '';
+        recursoExistente.claseOrigen = typeof claseOrigen === 'string' ? claseOrigen.trim() : '';
+        recursoExistente.link = String(link).trim();
+        await recursoExistente.save();
+        const actualizado = await Recurso_1.default.findById(id).populate('profesor', 'nombre email escuela carrera');
+        return res.json(actualizado);
+    }
+    catch (error) {
+        console.error('Error al actualizar recurso:', error);
+        return res.status(500).json({ message: 'Error al actualizar el recurso académico' });
+    }
+};
+exports.actualizarRecursoAdmin = actualizarRecursoAdmin;
+const eliminarRecursoAdmin = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const recursoExistente = await Recurso_1.default.findById(id);
+        if (!recursoExistente) {
+            return res.status(404).json({ message: 'Recurso no encontrado' });
+        }
+        await Recurso_1.default.findByIdAndDelete(id);
+        return res.json({ message: 'Recurso eliminado correctamente' });
+    }
+    catch (error) {
+        console.error('Error al eliminar recurso:', error);
+        return res.status(500).json({ message: 'Error al eliminar el recurso académico' });
+    }
+};
+exports.eliminarRecursoAdmin = eliminarRecursoAdmin;
